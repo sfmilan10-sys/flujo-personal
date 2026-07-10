@@ -90,20 +90,48 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.2rem;
+      gap: 0.15rem;
       text-decoration: none;
       color: var(--dim);
-      font-size: 0.55rem;
-      letter-spacing: 0.1em;
+      font-size: 0.5rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       transition: color 0.2s;
     }
 
     .nav-item .nav-num {
       font-family: 'Instrument Serif', serif;
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1;
     }
+
+    .scoreboard.hidden-mode {
+      display: none;
+    }
+
+    .vigilance-meter {
+      display: none;
+      width: min(200px, 70vw);
+      height: 6px;
+      background: var(--dim);
+      border-radius: 3px;
+      margin-bottom: 2.5rem;
+      overflow: hidden;
+    }
+
+    .vigilance-meter.show-mode { display: block; }
+
+    .vigilance-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      border-radius: 3px;
+      transition: width 0.8s ease 0.2s;
+    }
+
+    .active.visible .vigilance-fill.cut { width: 0%; }
+
+    .active.visible .vigilance-fill.full { width: 92%; }
 
     .nav-item.active { color: var(--accent); }
     .nav-item:hover { color: var(--muted); }
@@ -378,13 +406,16 @@
 
     <section class="idle" id="idle" aria-label="Estado de espera">
       <p class="trigger-label">Cuando notes</p>
-      <p class="trigger-word">Otra vez…</p>
-      <p class="trigger-sub">Decepción. Envidia. Mirando desde fuera.<br>El marcador corriendo en tu cabeza.</p>
+      <p class="trigger-word" id="triggerWord">Otra vez…</p>
+      <p class="trigger-sub" id="triggerSub">Decepción. Envidia. Mirando desde fuera.<br>El marcador corriendo en tu cabeza.</p>
 
       <button class="interruptor-btn" id="activate" aria-label="Activar interruptor táctico">
         <div class="btn-ring" aria-hidden="true"></div>
-        <span class="btn-text">Cortar</span>
+        <span class="btn-text" id="btnText">Cortar</span>
       </button>
+      <p style="margin-top:1.5rem;font-size:0.55rem;color:var(--dim)">
+        <a href="modulo-4.html" style="color:var(--muted);text-decoration:none">Espeso, tenso, sin chispa →</a>
+      </p>
     </section>
 
     <section class="active" id="active" aria-label="Interruptor activo" hidden>
@@ -400,6 +431,10 @@
         </div>
       </div>
 
+      <div class="vigilance-meter" id="vigilanceMeter" aria-hidden="true">
+        <div class="vigilance-fill full" id="vigilanceFill"></div>
+      </div>
+
       <p class="old-belief" id="oldBelief">Si no destaco, no valgo.</p>
 
       <p class="vital-objective" id="objective">
@@ -412,20 +447,66 @@
   </div>
 
   <nav class="bottom-nav" aria-label="Módulos">
-    <a class="nav-item active" href="index.html"><span class="nav-num">1</span>Interruptor</a>
+    <a class="nav-item active" href="index.html"><span class="nav-num">1</span>Cortar</a>
     <a class="nav-item" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
-    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Evidencia</a>
+    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Log</a>
+    <a class="nav-item" href="modulo-4.html"><span class="nav-num">4</span>Frenos</a>
   </nav>
 
   <script>
+    const MODES = {
+      comparacion: {
+        triggerWord: 'Otra vez…',
+        triggerSub: 'Decepción. Envidia. Mirando desde fuera.<br>El marcador corriendo en tu cabeza.',
+        btnText: 'Cortar',
+        oldBelief: 'Si no destaco, no valgo.',
+        objective: 'Mi valor no depende de <em>ganar la comparación</em>.',
+        anchor: 'No entres. No huyas. Solo deja de medir.',
+        useScoreboard: true
+      },
+      claridad: {
+        triggerWord: 'Demasiado ruido…',
+        triggerSub: 'Espeso. Tenso. Sin claridad.<br>La vigilancia corriendo sin objeto.',
+        btnText: 'Soltar',
+        oldBelief: 'Si no controlo, pierdo claridad.',
+        objective: 'Mi claridad no depende de <em>vigilar esto ahora</em>.',
+        anchor: 'No resuelvas. No analices. Suelta la vigilancia.',
+        useScoreboard: false
+      }
+    };
+
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('modo') === 'claridad' ? 'claridad' : 'comparacion';
+    const config = MODES[mode];
+
     const idle = document.getElementById('idle');
     const active = document.getElementById('active');
     const activate = document.getElementById('activate');
     const scoreboard = document.getElementById('scoreboard');
+    const vigilanceMeter = document.getElementById('vigilanceMeter');
+    const vigilanceFill = document.getElementById('vigilanceFill');
     const oldBelief = document.getElementById('oldBelief');
     const objective = document.getElementById('objective');
     const anchorNote = document.getElementById('anchorNote');
     const dismissHint = document.getElementById('dismissHint');
+    const triggerWord = document.getElementById('triggerWord');
+    const triggerSub = document.getElementById('triggerSub');
+    const btnText = document.getElementById('btnText');
+
+    triggerWord.textContent = config.triggerWord;
+    triggerSub.innerHTML = config.triggerSub;
+    btnText.textContent = config.btnText;
+    oldBelief.textContent = config.oldBelief;
+    objective.innerHTML = config.objective;
+    anchorNote.textContent = config.anchor;
+
+    if (config.useScoreboard) {
+      scoreboard.classList.remove('hidden-mode');
+      vigilanceMeter.classList.remove('show-mode');
+    } else {
+      scoreboard.classList.add('hidden-mode');
+      vigilanceMeter.classList.add('show-mode');
+    }
 
     let isActive = false;
 
@@ -439,7 +520,16 @@
       requestAnimationFrame(() => {
         active.classList.add('visible');
 
-        setTimeout(() => scoreboard.classList.add('cut'), 200);
+        if (config.useScoreboard) {
+          setTimeout(() => scoreboard.classList.add('cut'), 200);
+        } else {
+          vigilanceFill.classList.remove('cut');
+          vigilanceFill.classList.add('full');
+          setTimeout(() => {
+            vigilanceFill.classList.remove('full');
+            vigilanceFill.classList.add('cut');
+          }, 200);
+        }
         setTimeout(() => oldBelief.classList.add('show'), 400);
         setTimeout(() => objective.classList.add('show'), 600);
         setTimeout(() => {
@@ -455,6 +545,8 @@
 
       active.classList.remove('visible');
       scoreboard.classList.remove('cut');
+      vigilanceFill.classList.remove('cut');
+      vigilanceFill.classList.add('full');
       oldBelief.classList.remove('show');
       objective.classList.remove('show');
       anchorNote.classList.remove('show');
