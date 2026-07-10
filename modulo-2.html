@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#08080a">
+  <link rel="manifest" href="manifest.json">
+  <title>Sistema Flujo · Módulo 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08080a;
+      --surface: #111114;
+      --text: #e8e6e3;
+      --muted: #6b6862;
+      --dim: #3a3835;
+      --accent: #d4a574;
+      --accent-glow: rgba(212, 165, 116, 0.15);
+      --old-belief: #8b5a5a;
+      --rama-a: #7a5c5c;
+      --rama-b: #6a6a5a;
+      --glow-them: rgba(212, 165, 116, 0.25);
+      --nav-h: 3.25rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      touch-action: manipulation;
+    }
+
+    .app {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 100;
+    }
+
+    .module-tag {
+      position: absolute;
+      top: max(1.25rem, env(safe-area-inset-top));
+      left: 1.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      z-index: 10;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--surface);
+      border-top: 1px solid var(--dim);
+      display: flex;
+      z-index: 30;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      text-decoration: none;
+      color: var(--dim);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-item .nav-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .nav-item.active { color: var(--accent); }
+    .nav-item:hover { color: var(--muted); }
+
+    /* ── CHOOSE STATE ── */
+    .choose {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .choose.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.97);
+    }
+
+    .choose-prompt {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .choose-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.4rem, 5vw, 1.8rem);
+      text-align: center;
+      margin-bottom: 2.5rem;
+      max-width: 300px;
+      line-height: 1.3;
+    }
+
+    .branches {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: min(340px, 92vw);
+    }
+
+    .branch-btn {
+      border: 1px solid var(--dim);
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .branch-btn:active { transform: scale(0.98); }
+
+    .branch-btn:hover,
+    .branch-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 40px var(--accent-glow);
+    }
+
+    .branch-btn.rama-a:hover,
+    .branch-btn.rama-a:focus-visible { border-color: var(--rama-a); }
+
+    .branch-btn.rama-b:hover,
+    .branch-btn.rama-b:focus-visible { border-color: var(--rama-b); }
+
+    .branch-id {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .rama-a .branch-id { color: var(--rama-a); }
+    .rama-b .branch-id { color: var(--rama-b); }
+
+    .branch-label {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .branch-hint {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── REVEAL STATE ── */
+    .reveal {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .reveal-tag {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .reveal.rama-a .reveal-tag { color: var(--rama-a); }
+    .reveal.rama-b .reveal-tag { color: var(--rama-b); }
+
+    .diagram {
+      width: min(280px, 85vw);
+      height: 140px;
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .scene-ring {
+      position: absolute;
+      inset: 20px 30px;
+      border: 1px solid var(--dim);
+      border-radius: 50%;
+      opacity: 0.4;
+    }
+
+    .dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    .dot.them {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--glow-them);
+    }
+
+    .dot.you {
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--muted);
+    }
+
+    .dot.you.entering {
+      background: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .spectator-line {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      width: 1px;
+      height: 50px;
+      background: var(--dim);
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.5s ease 0.3s;
+    }
+
+    .reveal.rama-a.visible .spectator-line { opacity: 0.6; }
+
+    .door {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--dim);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+      transition: opacity 0.4s ease 0.2s, transform 0.5s ease 0.4s;
+    }
+
+    .reveal.rama-a.visible .door {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(0.6);
+    }
+
+    .stumble {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 2px;
+      background: var(--old-belief);
+      transform: translate(-50%, -50%) rotate(0deg) scaleX(0);
+      transition: transform 0.4s ease 0.3s;
+    }
+
+    .reveal.rama-b.visible .stumble {
+      transform: translate(-50%, -50%) rotate(-25deg) scaleX(1);
+    }
+
+    .reveal.rama-b.visible .dot.them {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(0.85);
+    }
+
+    .reveal.rama-b.visible .dot.you {
+      bottom: 50%;
+      left: 58%;
+      transform: translate(-50%, 50%);
+      opacity: 1;
+    }
+
+    .reveal.rama-b.visible .dot.you.entering {
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .truth {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+      text-align: center;
+      max-width: 320px;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease 0.5s, transform 0.5s ease 0.5s;
+    }
+
+    .reveal.visible .truth {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .truth em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .insight {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.7s;
+    }
+
+    .reveal.visible .insight {
+      opacity: 1;
+    }
+
+    .actions {
+      position: absolute;
+      bottom: calc(var(--nav-h) + 1rem + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.9s;
+    }
+
+    .reveal.visible .actions {
+      opacity: 1;
+    }
+
+    .action-cut {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .action-cut:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .action-back {
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-family: inherit;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .action-back:hover { color: var(--muted); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="module-tag">Módulo 2 · Ramas</div>
+
+    <section class="choose" id="choose" aria-label="Elegir rama">
+      <p class="choose-prompt">Después del otra vez</p>
+      <h1 class="choose-title">¿En qué rama estás ahora?</h1>
+
+      <div class="branches">
+        <button class="branch-btn rama-a" data-branch="a" type="button">
+          <div class="branch-id">Rama A</div>
+          <div class="branch-label">Ya la di por perdida</div>
+          <div class="branch-hint">Él va bien. Yo fuera. Ni lo intento.</div>
+        </button>
+
+        <button class="branch-btn rama-b" data-branch="b" type="button">
+          <div class="branch-id">Rama B</div>
+          <div class="branch-label">Vi mi oportunidad</div>
+          <div class="branch-hint">Él falló. Entro ahora. Modo batalla.</div>
+        </button>
+      </div>
+    </section>
+
+    <section class="reveal rama-a" id="revealA" hidden aria-label="Rama A revelada">
+      <p class="reveal-tag">Rama A · Rendición anticipada</p>
+
+      <div class="diagram" aria-hidden="true">
+        <div class="scene-ring"></div>
+        <div class="door"></div>
+        <div class="dot them"></div>
+        <div class="spectator-line"></div>
+        <div class="dot you"></div>
+      </div>
+
+      <p class="truth">No fallaste. <em>No empezaste.</em></p>
+      <p class="insight">El tribunal cerró sin juicio. Diste por perdida basándote en la proyección del éxito ajeno —sin datos, sin interacción.</p>
+
+      <div class="actions">
+        <a class="action-cut" href="index.html">Cortar marcador</a>
+        <button class="action-back" type="button" data-back>Volver</button>
+      </div>
+    </section>
+
+    <section class="reveal rama-b" id="revealB" hidden aria-label="Rama B revelada">
+      <p class="reveal-tag">Rama B · Contrataque</p>
+
+      <div class="diagram" aria-hidden="true">
+        <div class="scene-ring"></div>
+        <div class="stumble"></div>
+        <div class="dot them"></div>
+        <div class="dot you entering"></div>
+      </div>
+
+      <p class="truth">No entraste para conectar. <em>Entraste porque el marcador se inclinó.</em></p>
+      <p class="insight">Sentirte bien aquí no valida el sistema. Prueba que estar dentro alivia —pero el ranking sigue siendo la brújula.</p>
+
+      <div class="actions">
+        <a class="action-cut" href="index.html">Cortar marcador</a>
+        <button class="action-back" type="button" data-back>Volver</button>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Módulos">
+    <a class="nav-item" href="index.html"><span class="nav-num">1</span>Interruptor</a>
+    <a class="nav-item active" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
+    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Evidencia</a>
+  </nav>
+
+  <script>
+    const choose = document.getElementById('choose');
+    const revealA = document.getElementById('revealA');
+    const revealB = document.getElementById('revealB');
+    const branchBtns = document.querySelectorAll('[data-branch]');
+    const backBtns = document.querySelectorAll('[data-back]');
+
+    let currentReveal = null;
+
+    function showBranch(branch) {
+      currentReveal = branch === 'a' ? revealA : revealB;
+      choose.classList.add('hidden');
+      currentReveal.hidden = false;
+      requestAnimationFrame(() => currentReveal.classList.add('visible'));
+    }
+
+    function reset() {
+      if (!currentReveal) return;
+      currentReveal.classList.remove('visible');
+      setTimeout(() => {
+        currentReveal.hidden = true;
+        currentReveal = null;
+        choose.classList.remove('hidden');
+      }, 400);
+    }
+
+    branchBtns.forEach(btn => {
+      btn.addEventListener('click', () => showBranch(btn.dataset.branch));
+    });
+
+    backBtns.forEach(btn => {
+      btn.addEventListener('click', reset);
+    });
+  </script>
+</body>
+</html>

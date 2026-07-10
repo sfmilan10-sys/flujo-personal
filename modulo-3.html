@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#08080a">
+  <link rel="manifest" href="manifest.json">
+  <title>Sistema Flujo · Módulo 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08080a;
+      --surface: #111114;
+      --surface-2: #18181c;
+      --text: #e8e6e3;
+      --muted: #6b6862;
+      --dim: #3a3835;
+      --accent: #d4a574;
+      --accent-glow: rgba(212, 165, 116, 0.15);
+      --old-belief: #8b5a5a;
+      --positive: #6a8a6a;
+      --nav-h: 3.25rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      touch-action: manipulation;
+      overflow: hidden;
+    }
+
+    .app {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 100;
+    }
+
+    .header {
+      padding: max(1.25rem, env(safe-area-inset-top)) 1.5rem 1rem;
+      flex-shrink: 0;
+    }
+
+    .module-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .header-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 0.65rem;
+      color: var(--dim);
+      margin-top: 0.5rem;
+      line-height: 1.5;
+      max-width: 320px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0 1.5rem 1rem;
+      flex-shrink: 0;
+    }
+
+    .stat {
+      flex: 1;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat.rigid .stat-num { color: var(--old-belief); }
+    .stat.solté .stat-num { color: var(--positive); }
+
+    .stat-label {
+      font-size: 0.55rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .list-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 1.5rem calc(var(--nav-h) + 4.5rem + env(safe-area-inset-bottom));
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.7;
+    }
+
+    .empty em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--dim);
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+
+    .entry {
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      background: var(--surface);
+    }
+
+    .entry:active { opacity: 0.85; }
+
+    .entry:hover { border-color: var(--muted); }
+
+    .entry-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .entry-type {
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.45rem;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .entry-type.rigid {
+      color: var(--old-belief);
+      border: 1px solid var(--old-belief);
+    }
+
+    .entry-type.solté {
+      color: var(--positive);
+      border: 1px solid var(--positive);
+    }
+
+    .entry-date {
+      font-size: 0.55rem;
+      color: var(--dim);
+      text-align: right;
+    }
+
+    .entry-text {
+      font-size: 0.75rem;
+      line-height: 1.55;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-meta {
+      font-size: 0.6rem;
+      color: var(--dim);
+      margin-top: 0.5rem;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 0.75rem + env(safe-area-inset-bottom));
+      right: 1.5rem;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      background: var(--surface);
+      color: var(--accent);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      z-index: 20;
+      transition: background 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .fab:active { transform: scale(0.95); }
+    .fab:hover { background: var(--accent); color: var(--bg); }
+
+    /* ── FORM SHEET ── */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 92vh;
+      background: var(--surface);
+      border-top: 1px solid var(--dim);
+      border-radius: 12px 12px 0 0;
+      z-index: 60;
+      transform: translateY(100%);
+      transition: transform 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px;
+      height: 3px;
+      background: var(--dim);
+      border-radius: 2px;
+      margin: 0.75rem auto;
+      flex-shrink: 0;
+    }
+
+    .sheet-body {
+      overflow-y: auto;
+      padding: 0 1.5rem 1rem;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sheet-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+
+    .field-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .type-options {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .type-opt {
+      flex: 1;
+      padding: 0.75rem 0.5rem;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.65rem;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.4;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .type-opt.selected.rigid {
+      border-color: var(--old-belief);
+      background: rgba(139, 90, 90, 0.1);
+    }
+
+    .type-opt.selected.solté {
+      border-color: var(--positive);
+      background: rgba(106, 138, 106, 0.1);
+    }
+
+    .branch-options {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .branch-opt {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .branch-opt.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 88px;
+      padding: 0.75rem;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .sheet-actions {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--dim);
+      flex-shrink: 0;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.85rem;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .btn-save {
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-save:hover { filter: brightness(1.05); }
+
+    .btn-cancel {
+      border: 1px solid var(--dim);
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .btn-delete {
+      border: 1px solid var(--old-belief);
+      background: transparent;
+      color: var(--old-belief);
+      flex: 0 0 auto;
+      padding: 0.85rem 1rem;
+    }
+
+    .toast {
+      position: fixed;
+      top: max(1rem, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-120%);
+      background: var(--surface-2);
+      border: 1px solid var(--dim);
+      color: var(--accent);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.25rem;
+      border-radius: 4px;
+      z-index: 200;
+      transition: transform 0.35s ease;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--surface);
+      border-top: 1px solid var(--dim);
+      display: flex;
+      z-index: 30;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      text-decoration: none;
+      color: var(--dim);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-item .nav-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .nav-item.active { color: var(--accent); }
+    .nav-item:hover { color: var(--muted); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="header">
+      <p class="module-tag">Módulo 3 · Evidencia</p>
+      <h1 class="header-title">Registro empírico</h1>
+      <p class="header-sub">Datos contra la creencia de que el control garantiza el éxito. Edita cuando quieras.</p>
+    </header>
+
+    <div class="stats" id="stats">
+      <div class="stat rigid">
+        <div class="stat-num" id="countRigid">0</div>
+        <div class="stat-label">Rigidizó</div>
+      </div>
+      <div class="stat solté">
+        <div class="stat-num" id="countSolté">0</div>
+        <div class="stat-label">Solté marcador</div>
+      </div>
+    </div>
+
+    <div class="list-wrap" id="listWrap">
+      <div class="empty" id="empty">
+        <em>Sin evidencia aún</em>
+        La primera entrada empieza a desmontar la creencia vieja con datos reales, no con teoría.
+      </div>
+      <div id="entryList"></div>
+    </div>
+
+    <button class="fab" id="fab" type="button" aria-label="Nueva entrada">+</button>
+  </div>
+
+  <div class="sheet-overlay" id="overlay"></div>
+
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-body">
+      <h2 class="sheet-title" id="sheetTitle">Nueva entrada</h2>
+
+      <div class="field">
+        <span class="field-label">Qué pasó</span>
+        <div class="type-options">
+          <button type="button" class="type-opt rigid" data-type="rigid">Comparación me rigidizó</button>
+          <button type="button" class="type-opt solté" data-type="solté">Solté el marcador</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Rama (opcional)</span>
+        <div class="branch-options">
+          <button type="button" class="branch-opt" data-branch="">—</button>
+          <button type="button" class="branch-opt" data-branch="a">A · Perdida</button>
+          <button type="button" class="branch-opt" data-branch="b">B · Batalla</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="situation">Situación</label>
+        <textarea id="situation" placeholder="Qué estaba pasando. Sé concreto." required></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="aftermath">Qué noté después (opcional)</label>
+        <textarea id="aftermath" placeholder="Qué pasó al rigidizarte o al soltar el marcador."></textarea>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-delete" id="btnDelete" hidden>Eliminar</button>
+      <button type="button" class="btn btn-cancel" id="btnCancel">Cancelar</button>
+      <button type="button" class="btn btn-save" id="btnSave">Guardar</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Guardado</div>
+
+  <nav class="bottom-nav" aria-label="Módulos">
+    <a class="nav-item" href="index.html"><span class="nav-num">1</span>Interruptor</a>
+    <a class="nav-item" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
+    <a class="nav-item active" href="modulo-3.html"><span class="nav-num">3</span>Evidencia</a>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = 'sistema-flujo-evidencia-v1';
+
+    const listWrap = document.getElementById('listWrap');
+    const empty = document.getElementById('empty');
+    const entryList = document.getElementById('entryList');
+    const countRigid = document.getElementById('countRigid');
+    const countSolté = document.getElementById('countSolté');
+    const fab = document.getElementById('fab');
+    const overlay = document.getElementById('overlay');
+    const sheet = document.getElementById('sheet');
+    const sheetTitle = document.getElementById('sheetTitle');
+    const situation = document.getElementById('situation');
+    const aftermath = document.getElementById('aftermath');
+    const btnSave = document.getElementById('btnSave');
+    const btnCancel = document.getElementById('btnCancel');
+    const btnDelete = document.getElementById('btnDelete');
+    const toast = document.getElementById('toast');
+    const typeOpts = document.querySelectorAll('.type-opt');
+    const branchOpts = document.querySelectorAll('.branch-opt');
+
+    let entries = [];
+    let editingId = null;
+    let selectedType = 'rigid';
+    let selectedBranch = '';
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        entries = raw ? JSON.parse(raw) : [];
+      } catch {
+        entries = [];
+      }
+      render();
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      showToast();
+    }
+
+    function showToast() {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) +
+        ' · ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function branchLabel(b) {
+      if (b === 'a') return 'Rama A';
+      if (b === 'b') return 'Rama B';
+      return '';
+    }
+
+    function render() {
+      const rigid = entries.filter(e => e.type === 'rigid').length;
+      const solté = entries.filter(e => e.type === 'solté').length;
+      countRigid.textContent = rigid;
+      countSolté.textContent = solté;
+
+      if (entries.length === 0) {
+        empty.style.display = 'block';
+        entryList.innerHTML = '';
+        return;
+      }
+
+      empty.style.display = 'none';
+      const sorted = [...entries].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      entryList.innerHTML = sorted.map(e => `
+        <article class="entry" data-id="${e.id}">
+          <div class="entry-top">
+            <span class="entry-type ${e.type}">${e.type === 'rigid' ? 'Rigidizó' : 'Solté'}</span>
+            <span class="entry-date">${formatDate(e.updatedAt)}</span>
+          </div>
+          <p class="entry-text">${escapeHtml(e.situation)}</p>
+          ${e.branch ? `<p class="entry-meta">${branchLabel(e.branch)}</p>` : ''}
+        </article>
+      `).join('');
+
+      entryList.querySelectorAll('.entry').forEach(el => {
+        el.addEventListener('click', () => openEdit(el.dataset.id));
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function setType(type) {
+      selectedType = type;
+      typeOpts.forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.type === type);
+      });
+    }
+
+    function setBranch(branch) {
+      selectedBranch = branch;
+      branchOpts.forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.branch === branch);
+      });
+    }
+
+    function openNew() {
+      editingId = null;
+      sheetTitle.textContent = 'Nueva entrada';
+      situation.value = '';
+      aftermath.value = '';
+      setType('rigid');
+      setBranch('');
+      btnDelete.hidden = true;
+      openSheet();
+    }
+
+    function openEdit(id) {
+      const entry = entries.find(e => e.id === id);
+      if (!entry) return;
+      editingId = id;
+      sheetTitle.textContent = 'Editar entrada';
+      situation.value = entry.situation;
+      aftermath.value = entry.aftermath || '';
+      setType(entry.type);
+      setBranch(entry.branch || '');
+      btnDelete.hidden = false;
+      openSheet();
+    }
+
+    function openSheet() {
+      overlay.classList.add('open');
+      sheet.classList.add('open');
+      situation.focus();
+    }
+
+    function closeSheet() {
+      overlay.classList.remove('open');
+      sheet.classList.remove('open');
+      editingId = null;
+    }
+
+    function save() {
+      const sit = situation.value.trim();
+      if (!sit) {
+        situation.focus();
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const data = {
+        type: selectedType,
+        branch: selectedBranch || null,
+        situation: sit,
+        aftermath: aftermath.value.trim() || null,
+        updatedAt: now
+      };
+
+      if (editingId) {
+        const idx = entries.findIndex(e => e.id === editingId);
+        if (idx !== -1) {
+          entries[idx] = { ...entries[idx], ...data };
+        }
+      } else {
+        entries.push({ id: crypto.randomUUID(), createdAt: now, ...data });
+      }
+
+      persist();
+      render();
+      closeSheet();
+    }
+
+    function remove() {
+      if (!editingId) return;
+      if (!confirm('¿Eliminar esta entrada?')) return;
+      entries = entries.filter(e => e.id !== editingId);
+      persist();
+      render();
+      closeSheet();
+    }
+
+    typeOpts.forEach(opt => {
+      opt.addEventListener('click', () => setType(opt.dataset.type));
+    });
+
+    branchOpts.forEach(opt => {
+      opt.addEventListener('click', () => setBranch(opt.dataset.branch));
+    });
+
+    fab.addEventListener('click', openNew);
+    btnSave.addEventListener('click', save);
+    btnCancel.addEventListener('click', closeSheet);
+    btnDelete.addEventListener('click', remove);
+    overlay.addEventListener('click', closeSheet);
+
+    load();
+  </script>
+</body>
+</html>

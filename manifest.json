@@ -1,0 +1,10 @@
+{
+  "name": "Sistema Flujo",
+  "short_name": "Flujo",
+  "description": "Sistema personal para soltar la comparación y fluir",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#08080a",
+  "theme_color": "#08080a",
+  "orientation": "portrait"
+}
