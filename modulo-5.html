@@ -23,11 +23,12 @@
         <h1 class="trigger-big">Miedo a perderlo</h1>
         <p class="page-sub" style="text-align:center;margin-bottom:1.75rem">
           Te empujas: acelerar. Producir.<br>
-          <strong style="color:var(--text);font-weight:500">"Di algo bueno."</strong>
+          <strong style="color:var(--text);font-weight:500">"Di algo bueno."</strong><br>
+          <span style="color:var(--muted);font-size:0.85em">Una palabra. ¿De qué te agarras?</span>
         </p>
         <button class="btn-round" id="btnGo" type="button">
           <span class="btn-round-ring" aria-hidden="true"></span>
-          <span class="btn-round-label">No acelerar</span>
+          <span class="btn-round-label">Suétalo</span>
         </button>
       </div>
     </section>
@@ -35,7 +36,8 @@
     <section class="screen screen-cut" id="screenCut">
       <div class="cut-panel">
         <p class="strike" id="textOld"></p>
-        <p class="cut-text" id="textCut"></p>
+        <p class="cut-text em" id="textCut">Suétalo.</p>
+        <p class="cut-agarre" id="textAgarre"></p>
         <p class="cut-anchor" id="textAnchor"></p>
         <button class="cut-dismiss" id="btnDismiss" type="button">Toca para volver</button>
       </div>
@@ -50,14 +52,16 @@
       const cut = document.getElementById('screenCut');
       const textOld = document.getElementById('textOld');
       const textCut = document.getElementById('textCut');
+      const textAgarre = document.getElementById('textAgarre');
       const textAnchor = document.getElementById('textAnchor');
       const btnDismiss = document.getElementById('btnDismiss');
       let on = false;
       let timers = [];
 
       textOld.textContent = c.old;
-      textCut.innerHTML = c.cut;
-      textAnchor.textContent = c.anchor;
+      textCut.textContent = MAPA.ancla + '.';
+      textAgarre.textContent = c.agarre || '';
+      textAnchor.textContent = MAPA.anclaPregunta;
 
       function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
       function clearAll() { timers.forEach(clearTimeout); timers = []; }
@@ -66,19 +70,20 @@
         if (on) return;
         on = true;
         clearAll();
-        [textOld, textCut, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
+        [textOld, textCut, textAgarre, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
         ready.classList.remove('active');
         cut.classList.add('active');
         later(() => textOld.classList.add('show'), 80);
         later(() => textCut.classList.add('show'), 260);
-        later(() => { textAnchor.classList.add('show'); btnDismiss.classList.add('show'); }, 420);
+        later(() => textAgarre.classList.add('show'), 360);
+        later(() => { textAnchor.classList.add('show'); btnDismiss.classList.add('show'); }, 460);
       }
 
       function reset() {
         if (!on) return;
         on = false;
         clearAll();
-        [textOld, textCut, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
+        [textOld, textCut, textAgarre, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
         cut.classList.remove('active');
         ready.classList.add('active');
       }

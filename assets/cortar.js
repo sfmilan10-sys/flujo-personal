@@ -26,6 +26,7 @@
     meter: document.getElementById('meter'),
     textOld: document.getElementById('textOld'),
     textCut: document.getElementById('textCut'),
+    textAgarre: document.getElementById('textAgarre'),
     textAnchor: document.getElementById('textAnchor'),
     btnCut: document.getElementById('btnCut'),
     btnBackPick: document.getElementById('btnBackPick'),
@@ -90,6 +91,7 @@
     clearTimers();
     els.textOld.classList.remove('show');
     els.textCut.classList.remove('show');
+    els.textAgarre.classList.remove('show');
     els.textAnchor.classList.remove('show');
     els.btnDismiss.classList.remove('show');
     els.scoreboard.classList.remove('cut');
@@ -111,8 +113,9 @@
     clearCutAnimations();
 
     els.textOld.textContent = c.old;
-    els.textCut.innerHTML = c.cut;
-    els.textAnchor.textContent = c.anchor;
+    els.textCut.textContent = MAPA.ancla + '.';
+    els.textAgarre.textContent = c.agarre || '';
+    els.textAnchor.textContent = MAPA.anclaPregunta;
 
     const showScore = c.visual === 'scoreboard';
     const showMeter = c.visual === 'meter';
@@ -126,11 +129,12 @@
       if (showScore) later(() => els.scoreboard.classList.add('cut'), 180);
       if (showMeter) later(() => els.meter.classList.add('cut'), 180);
       later(() => els.textOld.classList.add('show'), 320);
-      later(() => els.textCut.classList.add('show'), 460);
+      later(() => els.textCut.classList.add('show'), 420);
+      later(() => els.textAgarre.classList.add('show'), 520);
       later(() => {
         els.textAnchor.classList.add('show');
         els.btnDismiss.classList.add('show');
-      }, 580);
+      }, 620);
     }, 40);
   }
 

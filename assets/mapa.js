@@ -1,5 +1,8 @@
 /** Mapa personal — editar con experiencia */
 window.MAPA = {
+  ancla: 'Suétalo',
+  anclaPregunta: '¿De qué te agarras? Nómbralo. No lo sueltes bien — suéltalo.',
+
   nuclear: {
     vieja: 'Hay una versión ideal de mí. Este instante debería parecerse más a ella.',
     nueva: 'Este instante no es una búsqueda de la versión ideal de mí.'
@@ -20,7 +23,7 @@ window.MAPA = {
       id: 'flash',
       href: 'modulo-5.html',
       label: 'Miedo a perderlo',
-      hint: 'Notaste el flash. Impulso de acelerar y "di algo bueno".'
+      hint: 'Impulso de acelerar. Palabra: Suétalo.'
     },
     {
       id: 'fuera',
@@ -44,60 +47,60 @@ window.MAPA = {
       id: 'cortar',
       href: 'cortar.html',
       label: 'Necesito cortar ya',
-      hint: 'Elegir qué orden revocar en este instante.'
+      hint: 'Elige la orden. Luego Suétalo — nombra el agarre.'
     }
   ],
 
   cortes: {
     flash: {
       trigger: 'Miedo a perderlo',
-      sub: 'Impulso de acelerar. Orden interna antes del filtro.',
-      btn: 'No acelerar',
+      sub: 'Impulso de acelerar. "Di algo bueno."',
+      btn: 'Suétalo',
       old: 'Di algo bueno.',
-      cut: 'No me empujo a ser <em>nadie</em> ahora.',
-      anchor: 'No sostener. No aprovechar. No evaluar.'
+      cut: 'Suétalo.',
+      agarre: '¿El momento bueno? ¿La versión ideal? ¿La frase perfecta?'
     },
     comparacion: {
       trigger: 'Otra vez…',
       sub: 'Mirando desde fuera. Él conecta. Yo en la grada.',
-      btn: 'Cortar marcador',
+      btn: 'Suétalo',
       old: 'Si no destaco, no valgo.',
-      cut: 'Mi valor no depende de <em>ganar la comparación</em>.',
-      anchor: 'No entres en batalla. No te rindas. Deja de medir.',
+      cut: 'Suétalo.',
+      agarre: '¿El ranking? ¿No quedar fuera? ¿Quedar arriba?',
       visual: 'scoreboard'
     },
     evaluacion: {
       trigger: 'Todo es examen',
       sub: 'El filtro global cayó. Nada es situación — todo es prueba.',
-      btn: 'Revocar examen',
+      btn: 'Suétalo',
       old: 'Tengo que aprobar este instante.',
-      cut: 'Nada de esto es una evaluación <em>ahora</em>.',
-      anchor: 'No compruebes si funcionó. Eso es otra prueba.'
+      cut: 'Suétalo.',
+      agarre: '¿Controlar? ¿Que salga bien? ¿No fallar?'
     },
     tribunal: {
       trigger: 'Tribunal activo',
       sub: 'Auditando cada frase antes de soltarla.',
-      btn: 'Soltar juez',
+      btn: 'Suétalo',
       old: 'Esta frase tiene que ser buena.',
-      cut: 'Este instante no es un caso <em>sobre mí</em>.',
-      anchor: 'No resuelvas. No analices. No produzcas.',
+      cut: 'Suétalo.',
+      agarre: '¿Cómo sueno? ¿El highlight reel? ¿Quedar bien?',
       visual: 'meter'
     },
     ideal: {
       trigger: 'Buscando al ideal',
       sub: 'Quieres recuperar la versión highlight. Solo highlights, nunca errores.',
-      btn: 'Soltar búsqueda',
+      btn: 'Suétalo',
       old: 'Tengo que volver a ser esa versión.',
-      cut: 'No tengo que <em>recuperar</em> nada ahora.',
-      anchor: 'Lo que funcionó: imperfecto, te reíste, auténtico. Sin juez.'
+      cut: 'Suétalo.',
+      agarre: '¿Recuperar al yo ideal? ¿Entender para no caer?'
     },
     instante: {
       trigger: 'Demasiado peso',
       sub: 'El pasado como veredicto. Exiges claridad a este momento.',
-      btn: 'Soltar exigencia',
+      btn: 'Suétalo',
       old: 'Este instante me debe claridad.',
-      cut: 'Este instante <em>no está en juicio</em>.',
-      anchor: 'El pasado no vota aquí. No necesita ser entendido ahora.'
+      cut: 'Suétalo.',
+      agarre: '¿Claridad? ¿Entender? ¿Que el pasado no cuente?'
     }
   },
 
@@ -152,7 +155,7 @@ window.MAPA = {
     tipos: [
       { id: 'rigid', label: 'Juez activo' },
       { id: 'solté', label: 'Solté el juez' },
-      { id: 'flash', label: 'Corté el flash' },
+      { id: 'flash', label: 'Suétalo a tiempo' },
       { id: 'tarde', label: 'Noté tarde' }
     ]
   }
