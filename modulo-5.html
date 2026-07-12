@@ -6,352 +6,75 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#08080a">
   <link rel="manifest" href="manifest.json">
-  <title>Sistema Flujo · Módulo 5</title>
+  <title>Flash · Sistema Flujo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/sistema.css">
   <style>
-    :root {
-      --bg: #08080a;
-      --surface: #111114;
-      --text: #e8e6e3;
-      --muted: #6b6862;
-      --dim: #3a3835;
-      --accent: #d4a574;
-      --accent-glow: rgba(212, 165, 116, 0.15);
-      --old-belief: #8b5a5a;
-      --nav-h: 3.25rem;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body { height: 100%; overflow: hidden; }
-
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
-      touch-action: manipulation;
-    }
-
-    .app {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .grain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.04;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      z-index: 100;
-    }
-
-    .module-tag {
-      position: absolute;
-      top: max(1.25rem, env(safe-area-inset-top));
-      left: 1.5rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      z-index: 10;
-    }
-
-    .idle {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem calc(var(--nav-h) + 1rem + env(safe-area-inset-bottom));
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    .idle.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.97);
-    }
-
-    .trigger-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
-    .trigger-word {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.8rem, 7vw, 2.5rem);
-      font-style: italic;
-      color: var(--old-belief);
-      line-height: 1.2;
-      margin-bottom: 0.75rem;
-      text-align: center;
-    }
-
-    .trigger-sub {
-      font-size: 0.7rem;
-      color: var(--dim);
-      margin-bottom: 2.5rem;
-      text-align: center;
-      max-width: 280px;
-      line-height: 1.6;
-    }
-
-    .flash-btn {
-      width: min(260px, 78vw);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      border: 1px solid var(--dim);
-      background: radial-gradient(circle at 40% 35%, var(--surface) 0%, var(--bg) 70%);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s;
-    }
-
-    .flash-btn:active { transform: scale(0.97); }
-
-    .flash-btn:hover, .flash-btn:focus-visible {
-      border-color: var(--accent);
-      box-shadow: 0 0 60px var(--accent-glow);
-      outline: none;
-    }
-
-    .btn-icon {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.5rem;
-      color: var(--accent);
-      line-height: 1;
-    }
-
-    .btn-text {
-      font-size: 0.6rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    .active {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem calc(var(--nav-h) + 2rem + env(safe-area-inset-bottom));
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
-    }
-
-    .active.visible { opacity: 1; pointer-events: auto; }
-
-    .old-command {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.5rem, 6vw, 2rem);
-      font-style: italic;
-      color: var(--old-belief);
-      text-decoration: line-through;
-      text-decoration-color: var(--old-belief);
-      opacity: 0;
-      margin-bottom: 2rem;
-      transition: opacity 0.5s ease 0.2s;
-    }
-
-    .active.visible .old-command.show { opacity: 0.7; }
-
-    .cut-line {
-      width: min(120px, 40vw);
-      height: 1px;
-      background: var(--dim);
-      transform: scaleX(0);
-      margin-bottom: 2rem;
-      transition: transform 0.4s ease 0.4s;
-    }
-
-    .active.visible .cut-line.show { transform: scaleX(1); }
-
-    .vital-cut {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.4rem, 5.5vw, 2rem);
-      line-height: 1.35;
-      text-align: center;
-      max-width: 320px;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.6s ease 0.55s, transform 0.6s ease 0.55s;
-    }
-
-    .active.visible .vital-cut.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .vital-cut em { font-style: italic; color: var(--accent); }
-
-    .anchor {
-      position: absolute;
-      bottom: calc(var(--nav-h) + 1.25rem + env(safe-area-inset-bottom));
-      font-size: 0.58rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--dim);
-      text-align: center;
-      max-width: 260px;
-      line-height: 1.5;
-      opacity: 0;
-      transition: opacity 0.5s ease 0.9s;
-    }
-
-    .active.visible .anchor.show { opacity: 1; }
-
-    .dismiss {
-      position: absolute;
-      bottom: calc(var(--nav-h) + 0.35rem + env(safe-area-inset-bottom));
-      font-size: 0.52rem;
-      color: var(--dim);
-      opacity: 0;
-      transition: opacity 0.4s ease 1.1s;
-    }
-
-    .active.visible .dismiss.show { opacity: 0.45; }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--surface);
-      border-top: 1px solid var(--dim);
-      display: flex;
-      z-index: 30;
-    }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.1rem;
-      text-decoration: none;
-      color: var(--dim);
-      font-size: 0.45rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-
-    .nav-item .nav-num {
-      font-family: 'Instrument Serif', serif;
-      font-size: 0.95rem;
-      line-height: 1;
-    }
-
-    .nav-item.active { color: var(--accent); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { transition-duration: 0.01ms !important; }
-    }
+    .ready { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.35s; }
+    .ready.off { opacity: 0; pointer-events: none; transform: scale(0.97); }
   </style>
 </head>
-<body>
-  <div class="app">
-    <div class="grain" aria-hidden="true"></div>
-    <div class="module-tag">Módulo 5 · Flash</div>
-
-    <section class="idle" id="idle" aria-label="Espera del flash">
-      <p class="trigger-label">Cuando notes</p>
-      <p class="trigger-word">Miedo a perderlo</p>
-      <p class="trigger-sub">El impulso de acelerar.<br>La orden interna antes de que caiga el filtro.</p>
-
-      <button class="flash-btn" id="activate" type="button" aria-label="Cortar el impulso">
-        <span class="btn-icon" aria-hidden="true">—</span>
-        <span class="btn-text">No acelerar</span>
+<body class="no-scroll">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="app full">
+    <main class="page center ready" id="ready">
+      <p class="module-tag">La palanca · 10 segundos</p>
+      <p class="module-tag" style="color:var(--old);font-size:0.72rem;letter-spacing:0.12em;margin-bottom:0.5rem">ENTRE miedo y filtro global</p>
+      <h1 class="page-title old italic serif" style="text-align:center;font-size:clamp(1.6rem,6vw,2.3rem)">Miedo a perderlo</h1>
+      <p class="page-sub" style="text-align:center;margin-bottom:2rem">Te empujas a ti: acelerar. Producir. <strong style="color:var(--text);font-weight:500">"Di algo bueno."</strong></p>
+      <button class="btn-round" id="go" type="button">
+        <span class="btn-round-label">No acelerar</span>
       </button>
-    </section>
+    </main>
 
-    <section class="active" id="active" aria-label="Corte activo" hidden>
-      <p class="old-command" id="oldCommand">Di algo bueno.</p>
-      <div class="cut-line" id="cutLine" aria-hidden="true"></div>
-      <p class="vital-cut" id="vitalCut">No me empujo a ser <em>nadie</em> ahora.</p>
-      <p class="anchor" id="anchor">No sostener. No aprovechar. No evaluar.</p>
-      <p class="dismiss" id="dismissHint">Toca para volver</p>
+    <section class="overlay-screen" id="cut" hidden>
+      <p class="strike" id="old"></p>
+      <p class="cut-text" id="cutText"></p>
+      <p class="anchor" id="anchor"></p>
+      <p class="dismiss" id="dismiss">Toca para volver</p>
     </section>
   </div>
 
-  <nav class="bottom-nav" aria-label="Módulos">
-    <a class="nav-item" href="index.html"><span class="nav-num">1</span>Cortar</a>
-    <a class="nav-item" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
-    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Log</a>
-    <a class="nav-item" href="modulo-4.html"><span class="nav-num">4</span>Frenos</a>
-    <a class="nav-item active" href="modulo-5.html"><span class="nav-num">5</span>Flash</a>
-  </nav>
-
+  <script src="assets/mapa.js"></script>
   <script>
-    const idle = document.getElementById('idle');
-    const active = document.getElementById('active');
-    const activate = document.getElementById('activate');
-    const oldCommand = document.getElementById('oldCommand');
-    const cutLine = document.getElementById('cutLine');
-    const vitalCut = document.getElementById('vitalCut');
-    const anchor = document.getElementById('anchor');
-    const dismissHint = document.getElementById('dismissHint');
+    const c = MAPA.cortes.flash;
+    const ready = document.getElementById('ready');
+    const cut = document.getElementById('cut');
+    let on = false;
 
-    let isActive = false;
+    document.getElementById('old').textContent = c.old;
+    document.getElementById('cutText').innerHTML = c.cut;
+    document.getElementById('anchor').textContent = c.anchor;
 
-    function activateCut() {
-      if (isActive) return;
-      isActive = true;
-      idle.classList.add('hidden');
-      active.hidden = false;
+    function activate() {
+      if (on) return;
+      on = true;
+      ready.classList.add('off');
+      cut.hidden = false;
       requestAnimationFrame(() => {
-        active.classList.add('visible');
-        setTimeout(() => oldCommand.classList.add('show'), 100);
-        setTimeout(() => cutLine.classList.add('show'), 300);
-        setTimeout(() => vitalCut.classList.add('show'), 450);
+        cut.classList.add('visible');
+        setTimeout(() => document.getElementById('old').classList.add('show'), 80);
+        setTimeout(() => document.getElementById('cutText').classList.add('show'), 280);
         setTimeout(() => {
-          anchor.classList.add('show');
-          dismissHint.classList.add('show');
-        }, 700);
+          document.getElementById('anchor').classList.add('show');
+          document.getElementById('dismiss').classList.add('show');
+        }, 480);
       });
     }
 
     function reset() {
-      if (!isActive) return;
-      isActive = false;
-      active.classList.remove('visible');
-      oldCommand.classList.remove('show');
-      cutLine.classList.remove('show');
-      vitalCut.classList.remove('show');
-      anchor.classList.remove('show');
-      dismissHint.classList.remove('show');
-      setTimeout(() => {
-        active.hidden = true;
-        idle.classList.remove('hidden');
-      }, 450);
+      if (!on) return;
+      on = false;
+      cut.classList.remove('visible');
+      ['old', 'cutText', 'anchor', 'dismiss'].forEach(id => document.getElementById(id).classList.remove('show'));
+      setTimeout(() => { cut.hidden = true; ready.classList.remove('off'); }, 380);
     }
 
-    activate.addEventListener('click', activateCut);
-    active.addEventListener('click', reset);
+    document.getElementById('go').addEventListener('click', activate);
+    cut.addEventListener('click', reset);
+    SISTEMA.injectNav('modulo-5.html');
   </script>
 </body>
 </html>

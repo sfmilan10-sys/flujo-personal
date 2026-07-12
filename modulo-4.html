@@ -6,472 +6,91 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#08080a">
   <link rel="manifest" href="manifest.json">
-  <title>Sistema Flujo · Módulo 4</title>
+  <title>Frenos · Sistema Flujo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/sistema.css">
   <style>
-    :root {
-      --bg: #08080a;
-      --surface: #111114;
-      --text: #e8e6e3;
-      --muted: #6b6862;
-      --dim: #3a3835;
-      --accent: #d4a574;
-      --accent-glow: rgba(212, 165, 116, 0.15);
-      --old-belief: #8b5a5a;
-      --freno-espeso: #6a6a7a;
-      --freno-tension: #7a6a5a;
-      --freno-original: #5a6a7a;
-      --nav-h: 3.25rem;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body { height: 100%; overflow: hidden; }
-
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
-      touch-action: manipulation;
-    }
-
-    .app {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .grain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.04;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      z-index: 100;
-    }
-
-    .module-tag {
-      position: absolute;
-      top: max(1.25rem, env(safe-area-inset-top));
-      left: 1.5rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      z-index: 10;
-    }
-
-    .choose {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.25rem calc(var(--nav-h) + 1rem + env(safe-area-inset-bottom));
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    .choose.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.97);
-    }
-
-    .choose-prompt {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .choose-title {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.35rem, 5vw, 1.75rem);
-      text-align: center;
-      margin-bottom: 0.5rem;
-      max-width: 300px;
-      line-height: 1.3;
-    }
-
-    .choose-sub {
-      font-size: 0.65rem;
-      color: var(--dim);
-      text-align: center;
-      margin-bottom: 2rem;
-      max-width: 280px;
-      line-height: 1.6;
-    }
-
-    .frenos {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      width: min(340px, 92vw);
-    }
-
-    .freno-btn {
-      border: 1px solid var(--dim);
-      background: var(--surface);
-      border-radius: 4px;
-      padding: 1rem 1.25rem;
-      cursor: pointer;
-      text-align: left;
-      transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s;
-      color: var(--text);
-      font-family: inherit;
-    }
-
-    .freno-btn:active { transform: scale(0.98); }
-
-    .freno-btn:hover, .freno-btn:focus-visible { outline: none; box-shadow: 0 0 40px var(--accent-glow); }
-
-    .freno-btn[data-freno="espeso"]:hover { border-color: var(--freno-espeso); }
-    .freno-btn[data-freno="tension"]:hover { border-color: var(--freno-tension); }
-    .freno-btn[data-freno="original"]:hover { border-color: var(--freno-original); }
-    .freno-btn[data-freno="comparar"]:hover { border-color: var(--old-belief); }
-
-    .freno-id {
-      font-size: 0.55rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      margin-bottom: 0.35rem;
-      color: var(--muted);
-    }
-
-    .freno-label {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.15rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .freno-hint {
-      font-size: 0.62rem;
-      color: var(--dim);
-      line-height: 1.45;
-    }
-
+    .choose { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.35s; }
+    .choose.off { opacity: 0; pointer-events: none; transform: scale(0.97); }
     .reveal {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 2rem 1.25rem calc(var(--nav-h) + 5rem + env(safe-area-inset-bottom));
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
+      opacity: 0; pointer-events: none; transition: opacity 0.45s; z-index: 15;
     }
-
-    .reveal.visible { opacity: 1; pointer-events: auto; }
-
-    .reveal-tag {
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-      color: var(--accent);
-    }
-
-    .meter {
-      width: min(200px, 70vw);
-      height: 6px;
-      background: var(--dim);
-      border-radius: 3px;
-      margin-bottom: 2rem;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .meter-fill {
-      height: 100%;
-      background: var(--accent);
-      width: 0%;
-      border-radius: 3px;
-      transition: width 1s ease 0.2s;
-    }
-
-    .reveal.visible .meter-fill { width: 92%; }
-
-    .meter-label {
-      position: absolute;
-      top: 14px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-size: 0.55rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .truth {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.15rem, 4.5vw, 1.45rem);
-      text-align: center;
-      max-width: 320px;
-      line-height: 1.4;
-      margin-bottom: 1rem;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.5s ease 0.4s, transform 0.5s ease 0.4s;
-    }
-
-    .reveal.visible .truth { opacity: 1; transform: translateY(0); }
-
-    .truth em { font-style: italic; color: var(--accent); }
-
-    .insight {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-align: center;
-      max-width: 310px;
-      line-height: 1.65;
-      opacity: 0;
-      transition: opacity 0.5s ease 0.6s;
-    }
-
-    .reveal.visible .insight { opacity: 1; }
-
-    .mechanism {
-      font-size: 0.6rem;
-      color: var(--dim);
-      text-align: center;
-      max-width: 280px;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--dim);
-      opacity: 0;
-      transition: opacity 0.5s ease 0.8s;
-    }
-
-    .reveal.visible .mechanism { opacity: 1; }
-
-    .actions {
-      position: absolute;
-      bottom: calc(var(--nav-h) + 0.75rem + env(safe-area-inset-bottom));
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.6rem;
-      opacity: 0;
-      transition: opacity 0.4s ease 1s;
-    }
-
-    .reveal.visible .actions { opacity: 1; }
-
-    .action-cut {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      text-decoration: none;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .action-cut:hover { background: var(--accent); color: var(--bg); }
-
-    .action-back {
-      background: none;
-      border: none;
-      color: var(--dim);
-      font-family: inherit;
-      font-size: 0.55rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--surface);
-      border-top: 1px solid var(--dim);
-      display: flex;
-      z-index: 30;
-    }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.15rem;
-      text-decoration: none;
-      color: var(--dim);
-      font-size: 0.5rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-
-    .nav-item .nav-num {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1rem;
-      line-height: 1;
-    }
-
-    .nav-item.active { color: var(--accent); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { transition-duration: 0.01ms !important; }
-    }
+    .reveal.on { opacity: 1; pointer-events: auto; }
+    .reveal-tag { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    .truth { font-family: 'Instrument Serif', serif; font-size: clamp(1.1rem, 4.2vw, 1.4rem); text-align: center; max-width: 320px; line-height: 1.4; margin-bottom: 0.75rem; }
+    .insight { font-size: 0.65rem; color: var(--muted); text-align: center; max-width: 310px; line-height: 1.65; }
+    .actions { position: absolute; bottom: calc(var(--nav-h) + 0.75rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
   </style>
 </head>
-<body>
-  <div class="app">
-    <div class="grain" aria-hidden="true"></div>
-    <div class="module-tag">Módulo 4 · Frenos</div>
+<body class="no-scroll">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="app full">
+    <main class="page center choose" id="choose">
+      <p class="module-tag">Identificar · No mandar</p>
+      <h1 class="page-title" style="text-align:center">¿Qué freno<br>está activo?</h1>
+      <p class="page-sub" style="text-align:center;margin-bottom:1.25rem">Tu señal suele ser el análisis — no el cuerpo. Elige lo que reconoces.</p>
+      <div class="stack" id="frenoList"></div>
+    </main>
 
-    <section class="choose" id="choose" aria-label="Elegir freno">
-      <p class="choose-prompt">Cuando notes</p>
-      <h1 class="choose-title">Espeso. Tenso. Sin chispa.</h1>
-      <p class="choose-sub">No sabes qué te frena. Empieza por lo que sientes ahora — no por lo que crees que debería ser.</p>
-
-      <div class="frenos">
-        <button class="freno-btn" data-freno="espeso" type="button">
-          <div class="freno-id">Freno 1</div>
-          <div class="freno-label">Espeso / sin claridad</div>
-          <div class="freno-hint">Observando y juzgando lo que voy a decir antes de decirlo</div>
-        </button>
-
-        <button class="freno-btn" data-freno="tension" type="button">
-          <div class="freno-id">Freno 2</div>
-          <div class="freno-label">Tenso, no relajado</div>
-          <div class="freno-hint">Cuerpo agarrado, hombros, mandíbula, respiración corta</div>
-        </button>
-
-        <button class="freno-btn" data-freno="original" type="button">
-          <div class="freno-id">Freno 3</div>
-          <div class="freno-label">Sin originalidad</div>
-          <div class="freno-hint">Todo me sale genérico, calculado, sin vida propia</div>
-        </button>
-
-        <button class="freno-btn" data-freno="comparar" type="button">
-          <div class="freno-id">Freno 4</div>
-          <div class="freno-label">Comparándome</div>
-          <div class="freno-hint">El ranking, el otra vez, medirme con otros</div>
-        </button>
-      </div>
-    </section>
-
-    <section class="reveal" id="reveal" hidden aria-label="Freno identificado">
-      <p class="reveal-tag" id="revealTag">Freno identificado</p>
-
-      <div class="meter" aria-hidden="true">
-        <div class="meter-fill" id="meterFill"></div>
-        <span class="meter-label">Procesos en segundo plano</span>
-      </div>
-
+    <section class="reveal" id="reveal" hidden>
+      <p class="reveal-tag" id="tag"></p>
       <p class="truth" id="truth"></p>
       <p class="insight" id="insight"></p>
-      <p class="mechanism" id="mechanism"></p>
-
       <div class="actions">
-        <a class="action-cut" href="index.html" id="actionCut">Soltar vigilancia</a>
-        <button class="action-back" type="button" id="btnBack">Volver</button>
+        <a class="link-btn" id="cutLink" href="cortar.html">Cortar</a>
+        <button class="text-btn" type="button" id="back">Volver</button>
       </div>
     </section>
   </div>
 
-  <nav class="bottom-nav" aria-label="Módulos">
-    <a class="nav-item" href="index.html"><span class="nav-num">1</span>Cortar</a>
-    <a class="nav-item" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
-    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Log</a>
-    <a class="nav-item active" href="modulo-4.html"><span class="nav-num">4</span>Frenos</a>
-    <a class="nav-item" href="modulo-5.html"><span class="nav-num">5</span>Flash</a>
-  </nav>
-
+  <script src="assets/mapa.js"></script>
   <script>
-    const FRENOS = {
-      espeso: {
-        tag: 'Freno · Tribunal antes de hablar',
-        truth: 'No estás bloqueado. Estás <em>auditando cada frase</em> antes de soltarla.',
-        insight: 'Observas y juzgas lo que vas a decir antes de decirlo. Cada palabra pasa por un tribunal interno. Eso no es pensar — es vigilar. Y vigilar en vivo te deja espeso, sin originalidad, sin fluidez.',
-        mechanism: 'Mecanismo: auto-vigilancia + juicio anticipado del output'
-      },
-      tension: {
-        tag: 'Freno · Vigilancia corporal',
-        truth: 'Tu cuerpo sigue en alerta <em>sin amenaza identificada</em>.',
-        insight: 'La tensión no es el problema — es la señal. Algo en tu sistema sigue calculando, aunque no sepas qué. El cuerpo se rigidiza cuando la mente no suelta el control.',
-        mechanism: 'Mecanismo: control crónico → rigidez física'
-      },
-      original: {
-        tag: 'Freno · Auto-vigilancia',
-        truth: 'No pierdes creatividad. La estás <em>auditando en vivo</em>.',
-        insight: 'La originalidad necesita banda ancha libre. Cuando te observas mientras actúas — midiendo si suena bien, si quedas bien — no queda espacio para que salga algo tuyo.',
-        mechanism: 'Mecanismo: auto-vigilancia consume el recurso creativo'
-      },
-      comparar: {
-        tag: 'Freno · Comparación',
-        truth: 'Este freno ya lo conoces.',
-        insight: 'El ranking está activo. Ve al módulo de ramas si necesitas ver en qué modo estás — rendición o batalla.',
-        mechanism: 'Mecanismo: valor medido por posición relativa',
-        link: 'modulo-2.html',
-        linkText: 'Ver ramas'
-      }
+    const labels = {
+      espeso: { title: 'Espeso — juzgando la frase', hint: '"Di algo bueno" antes de hablar' },
+      analisis: { title: 'Análisis sobre mí', hint: '¿Cómo recupero al ideal? El bucle' },
+      evaluacion: { title: 'Todo es examen', hint: 'Filtro global — cae de golpe' },
+      comparar: { title: '"Otra vez…" — la grada', hint: 'Ranking. Mirando desde fuera' }
     };
 
     const choose = document.getElementById('choose');
     const reveal = document.getElementById('reveal');
-    const revealTag = document.getElementById('revealTag');
-    const truth = document.getElementById('truth');
-    const insight = document.getElementById('insight');
-    const mechanism = document.getElementById('mechanism');
-    const actionCut = document.getElementById('actionCut');
-    const btnBack = document.getElementById('btnBack');
-    const meterFill = document.getElementById('meterFill');
+    const frenoList = document.getElementById('frenoList');
 
-    function showFreno(key) {
-      const f = FRENOS[key];
-      revealTag.textContent = f.tag;
-      truth.innerHTML = f.truth;
-      insight.textContent = f.insight;
-      mechanism.textContent = f.mechanism;
-        actionCut.href = f.link || 'index.html?modo=claridad';
-      actionCut.textContent = f.linkText || 'Soltar vigilancia';
-      meterFill.style.width = '0%';
+    frenoList.innerHTML = Object.entries(labels).map(([key, l]) => `
+      <button class="card" type="button" data-freno="${key}">
+        <div class="card-id">${MAPA.frenos[key].tag.replace('Tu freno · ', '')}</div>
+        <div class="card-label">${l.title}</div>
+        <div class="card-hint">${l.hint}</div>
+      </button>
+    `).join('');
 
-      choose.classList.add('hidden');
+    function show(key) {
+      const f = MAPA.frenos[key];
+      document.getElementById('tag').textContent = f.tag;
+      document.getElementById('truth').innerHTML = f.truth;
+      document.getElementById('insight').textContent = f.insight;
+      document.getElementById('cutLink').href = f.link;
+      choose.classList.add('off');
       reveal.hidden = false;
-      requestAnimationFrame(() => {
-        reveal.classList.add('visible');
-        requestAnimationFrame(() => { meterFill.style.width = '92%'; });
-      });
+      requestAnimationFrame(() => reveal.classList.add('on'));
     }
 
-    function reset() {
-      reveal.classList.remove('visible');
-      meterFill.style.width = '0%';
-      setTimeout(() => {
-        reveal.hidden = true;
-        choose.classList.remove('hidden');
-      }, 400);
+    function back() {
+      reveal.classList.remove('on');
+      setTimeout(() => { reveal.hidden = true; choose.classList.remove('off'); }, 350);
     }
 
-    document.querySelectorAll('.freno-btn').forEach(btn => {
-      btn.addEventListener('click', () => showFreno(btn.dataset.freno));
-    });
+    frenoList.querySelectorAll('[data-freno]').forEach(b => b.addEventListener('click', () => show(b.dataset.freno)));
+    document.getElementById('back').addEventListener('click', back);
 
-    btnBack.addEventListener('click', reset);
+    const pre = SISTEMA.qs('freno');
+    if (pre && MAPA.frenos[pre]) show(pre);
+
+    SISTEMA.injectNav('modulo-4.html');
   </script>
 </body>
 </html>

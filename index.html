@@ -6,568 +6,69 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#08080a">
   <link rel="manifest" href="manifest.json">
-  <title>Sistema Flujo · Módulo 1</title>
+  <title>Sistema Flujo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/sistema.css">
   <style>
-    :root {
-      --bg: #08080a;
-      --surface: #111114;
-      --text: #e8e6e3;
-      --muted: #6b6862;
-      --dim: #3a3835;
-      --accent: #d4a574;
-      --accent-glow: rgba(212, 165, 116, 0.15);
-      --old-belief: #8b5a5a;
-      --cut: #c9c5be;
-      --nav-h: 3.25rem;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg);
+    .hero-quote {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.05rem;
+      line-height: 1.45;
+      margin: 1rem 0 0.25rem;
       color: var(--text);
-      touch-action: manipulation;
     }
-
-    .app {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .grain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.04;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      z-index: 100;
-    }
-
-    .module-tag {
-      position: absolute;
-      top: max(1.25rem, env(safe-area-inset-top));
-      left: 1.5rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
+    .section-label {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
-      z-index: 10;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--surface);
-      border-top: 1px solid var(--dim);
-      display: flex;
-      z-index: 30;
-    }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.1rem;
-      text-decoration: none;
-      color: var(--dim);
-      font-size: 0.45rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-
-    .nav-item .nav-num {
-      font-family: 'Instrument Serif', serif;
-      font-size: 0.95rem;
-      line-height: 1;
-    }
-
-    .scoreboard.hidden-mode {
-      display: none;
-    }
-
-    .vigilance-meter {
-      display: none;
-      width: min(200px, 70vw);
-      height: 6px;
-      background: var(--dim);
-      border-radius: 3px;
-      margin-bottom: 2.5rem;
-      overflow: hidden;
-    }
-
-    .vigilance-meter.show-mode { display: block; }
-
-    .vigilance-fill {
-      height: 100%;
-      background: var(--accent);
-      width: 0%;
-      border-radius: 3px;
-      transition: width 0.8s ease 0.2s;
-    }
-
-    .active.visible .vigilance-fill.cut { width: 0%; }
-
-    .active.visible .vigilance-fill.full { width: 92%; }
-
-    .nav-item.active { color: var(--accent); }
-    .nav-item:hover { color: var(--muted); }
-
-    /* ── IDLE STATE ── */
-    .idle {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    .idle.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.96);
-    }
-
-    .trigger-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .trigger-word {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(2.5rem, 10vw, 4rem);
-      font-style: italic;
-      color: var(--old-belief);
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-      opacity: 0.85;
-    }
-
-    .trigger-sub {
-      font-size: 0.75rem;
-      color: var(--dim);
-      margin-bottom: 3rem;
-      text-align: center;
-      max-width: 280px;
-      line-height: 1.6;
-    }
-
-    .interruptor-btn {
-      width: min(280px, 80vw);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      border: 1px solid var(--dim);
-      background: radial-gradient(circle at 40% 35%, var(--surface) 0%, var(--bg) 70%);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s;
-      position: relative;
-    }
-
-    .interruptor-btn::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: 50%;
-      border: 1px solid transparent;
-      transition: border-color 0.3s;
-    }
-
-    .interruptor-btn:active {
-      transform: scale(0.97);
-    }
-
-    .interruptor-btn:hover,
-    .interruptor-btn:focus-visible {
-      border-color: var(--accent);
-      box-shadow: 0 0 60px var(--accent-glow);
-      outline: none;
-    }
-
-    .btn-ring {
-      width: 48px;
-      height: 48px;
-      border: 2px solid var(--accent);
-      border-radius: 50%;
-      position: relative;
-    }
-
-    .btn-ring::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 12px;
-      height: 12px;
-      background: var(--accent);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .btn-text {
-      font-size: 0.65rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    /* ── ACTIVE STATE ── */
-    .active {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.6s ease 0.1s;
-    }
-
-    .active.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .scoreboard {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2.5rem;
-      position: relative;
-    }
-
-    .score-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
-    }
-
-    .score-col.them {
-      transition-delay: 0.05s;
-    }
-
-    .score-col.you {
-      transition-delay: 0.1s;
-    }
-
-    .scoreboard.cut .score-col {
-      opacity: 0;
-      transform: translateY(12px);
-      filter: blur(4px);
-    }
-
-    .score-bar {
-      width: 3px;
-      background: var(--dim);
-      border-radius: 2px;
-      transition: height 0.6s ease, background 0.6s ease;
-    }
-
-    .score-col.them .score-bar { height: 72px; }
-    .score-col.you .score-bar { height: 28px; }
-
-    .score-label {
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .cut-line {
-      position: absolute;
-      top: 50%;
-      left: 10%;
-      right: 10%;
-      height: 1px;
-      background: var(--cut);
-      transform: scaleX(0);
-      transition: transform 0.5s ease 0.3s;
-    }
-
-    .scoreboard.cut .cut-line {
-      transform: scaleX(1);
-    }
-
-    .old-belief {
-      font-size: 0.7rem;
-      color: var(--old-belief);
-      text-decoration: line-through;
-      text-decoration-color: var(--old-belief);
-      opacity: 0;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      max-width: 320px;
-      line-height: 1.6;
-      transition: opacity 0.5s ease 0.5s;
-    }
-
-    .active.visible .old-belief.show {
-      opacity: 0.6;
-    }
-
-    .vital-objective {
-      font-family: 'Instrument Serif', serif;
-      font-size: clamp(1.6rem, 6vw, 2.4rem);
-      line-height: 1.35;
-      text-align: center;
-      max-width: 360px;
-      color: var(--text);
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.7s ease 0.7s, transform 0.7s ease 0.7s;
-    }
-
-    .active.visible .vital-objective.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .vital-objective em {
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .anchor-note {
-      position: absolute;
-      bottom: calc(var(--nav-h) + 1.5rem + env(safe-area-inset-bottom));
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--dim);
-      opacity: 0;
-      transition: opacity 0.5s ease 1.2s;
-    }
-
-    .active.visible .anchor-note.show {
-      opacity: 1;
-    }
-
-    .dismiss-hint {
-      position: absolute;
-      bottom: calc(var(--nav-h) + 0.5rem + env(safe-area-inset-bottom));
-      font-size: 0.55rem;
-      color: var(--dim);
-      opacity: 0;
-      transition: opacity 0.4s ease 1.5s;
-    }
-
-    .active.visible .dismiss-hint.show {
-      opacity: 0.5;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        transition-duration: 0.01ms !important;
-      }
+      margin: 1.5rem 0 0.65rem;
     }
   </style>
 </head>
-<body>
-  <div class="app" id="app">
-    <div class="grain" aria-hidden="true"></div>
-    <div class="module-tag">Módulo 1 · Interruptor</div>
+<body class="scroll">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="app">
+    <main class="page">
+      <p class="module-tag">Tu sistema · Personal</p>
+      <h1 class="page-title">Sistema Flujo</h1>
+      <p class="page-sub wide">No es motivación. Es cortar las órdenes que tu mente ejecuta sola.</p>
 
-    <section class="idle" id="idle" aria-label="Estado de espera">
-      <p class="trigger-label">Cuando notes</p>
-      <p class="trigger-word" id="triggerWord">Otra vez…</p>
-      <p class="trigger-sub" id="triggerSub">Decepción. Envidia. Mirando desde fuera.<br>El marcador corriendo en tu cabeza.</p>
+      <div class="nuclear" id="nuclearOld"></div>
+      <div class="nuclear nuclear-new" id="nuclearNew"></div>
 
-      <button class="interruptor-btn" id="activate" aria-label="Activar interruptor táctico">
-        <div class="btn-ring" aria-hidden="true"></div>
-        <span class="btn-text" id="btnText">Cortar</span>
-      </button>
-      <p style="margin-top:1.5rem;font-size:0.55rem;color:var(--dim)">
-        <a href="modulo-4.html" style="color:var(--muted);text-decoration:none">Espeso, tenso, sin chispa →</a>
+      <p class="section-label">Tu ciclo (mapeado)</p>
+      <div class="cycle-box" id="cycleBox"></div>
+
+      <p class="section-label">¿Qué notas ahora?</p>
+      <div class="stack" id="router"></div>
+
+      <p class="hero-quote" style="margin-top:1.75rem;font-size:0.85rem;color:var(--muted)">
+        Evidencia que el juez borra: <span class="accent italic">imperfecto → te reíste → auténtico → conectó.</span>
       </p>
-    </section>
-
-    <section class="active" id="active" aria-label="Interruptor activo" hidden>
-      <div class="scoreboard" id="scoreboard" aria-hidden="true">
-        <div class="score-col them">
-          <div class="score-bar"></div>
-          <span class="score-label">Él</span>
-        </div>
-        <div class="cut-line"></div>
-        <div class="score-col you">
-          <div class="score-bar"></div>
-          <span class="score-label">Tú</span>
-        </div>
-      </div>
-
-      <div class="vigilance-meter" id="vigilanceMeter" aria-hidden="true">
-        <div class="vigilance-fill full" id="vigilanceFill"></div>
-      </div>
-
-      <p class="old-belief" id="oldBelief">Si no destaco, no valgo.</p>
-
-      <p class="vital-objective" id="objective">
-        Mi valor no depende de <em>ganar la comparación</em>.
-      </p>
-
-      <p class="anchor-note" id="anchorNote">No entres. No huyas. Solo deja de medir.</p>
-      <p class="dismiss-hint" id="dismissHint">Toca para volver</p>
-    </section>
+    </main>
   </div>
 
-  <nav class="bottom-nav" aria-label="Módulos">
-    <a class="nav-item active" href="index.html"><span class="nav-num">1</span>Cortar</a>
-    <a class="nav-item" href="modulo-2.html"><span class="nav-num">2</span>Ramas</a>
-    <a class="nav-item" href="modulo-3.html"><span class="nav-num">3</span>Log</a>
-    <a class="nav-item" href="modulo-4.html"><span class="nav-num">4</span>Frenos</a>
-    <a class="nav-item" href="modulo-5.html"><span class="nav-num">5</span>Flash</a>
-  </nav>
-
+  <script src="assets/mapa.js"></script>
   <script>
-    const MODES = {
-      comparacion: {
-        triggerWord: 'Otra vez…',
-        triggerSub: 'Decepción. Envidia. Mirando desde fuera.<br>El marcador corriendo en tu cabeza.',
-        btnText: 'Cortar',
-        oldBelief: 'Si no destaco, no valgo.',
-        objective: 'Mi valor no depende de <em>ganar la comparación</em>.',
-        anchor: 'No entres. No huyas. Solo deja de medir.',
-        useScoreboard: true
-      },
-      claridad: {
-        triggerWord: 'Demasiado ruido…',
-        triggerSub: 'Espeso. Tenso. Sin claridad.<br>La vigilancia corriendo sin objeto.',
-        btnText: 'Soltar',
-        oldBelief: 'Si no controlo, pierdo claridad.',
-        objective: 'Mi claridad no depende de <em>vigilar esto ahora</em>.',
-        anchor: 'No resuelvas. No analices. Suelta la vigilancia.',
-        useScoreboard: false
-      }
-    };
+    document.getElementById('nuclearOld').innerHTML = '<strong>Creencia vieja:</strong> ' + MAPA.nuclear.vieja;
+    document.getElementById('nuclearNew').innerHTML = '<strong>Orden vital:</strong> ' + MAPA.nuclear.nueva;
 
-    const params = new URLSearchParams(location.search);
-    const mode = params.get('modo') === 'claridad' ? 'claridad' : 'comparacion';
-    const config = MODES[mode];
+    document.getElementById('cycleBox').innerHTML = MAPA.ciclo.map(s =>
+      `<div class="cycle-step${s.hi ? ' highlight' : ''}">${s.t}</div>`
+    ).join('');
 
-    const idle = document.getElementById('idle');
-    const active = document.getElementById('active');
-    const activate = document.getElementById('activate');
-    const scoreboard = document.getElementById('scoreboard');
-    const vigilanceMeter = document.getElementById('vigilanceMeter');
-    const vigilanceFill = document.getElementById('vigilanceFill');
-    const oldBelief = document.getElementById('oldBelief');
-    const objective = document.getElementById('objective');
-    const anchorNote = document.getElementById('anchorNote');
-    const dismissHint = document.getElementById('dismissHint');
-    const triggerWord = document.getElementById('triggerWord');
-    const triggerSub = document.getElementById('triggerSub');
-    const btnText = document.getElementById('btnText');
+    document.getElementById('router').innerHTML = MAPA.router.map(r => `
+      <a class="card" href="${r.href}">
+        <div class="card-id">${r.id}</div>
+        <div class="card-label">${r.label}</div>
+        <div class="card-hint">${r.hint}</div>
+      </a>
+    `).join('');
 
-    triggerWord.textContent = config.triggerWord;
-    triggerSub.innerHTML = config.triggerSub;
-    btnText.textContent = config.btnText;
-    oldBelief.textContent = config.oldBelief;
-    objective.innerHTML = config.objective;
-    anchorNote.textContent = config.anchor;
-
-    if (config.useScoreboard) {
-      scoreboard.classList.remove('hidden-mode');
-      vigilanceMeter.classList.remove('show-mode');
-    } else {
-      scoreboard.classList.add('hidden-mode');
-      vigilanceMeter.classList.add('show-mode');
-    }
-
-    let isActive = false;
-
-    function activateInterruptor() {
-      if (isActive) return;
-      isActive = true;
-
-      idle.classList.add('hidden');
-      active.hidden = false;
-
-      requestAnimationFrame(() => {
-        active.classList.add('visible');
-
-        if (config.useScoreboard) {
-          setTimeout(() => scoreboard.classList.add('cut'), 200);
-        } else {
-          vigilanceFill.classList.remove('cut');
-          vigilanceFill.classList.add('full');
-          setTimeout(() => {
-            vigilanceFill.classList.remove('full');
-            vigilanceFill.classList.add('cut');
-          }, 200);
-        }
-        setTimeout(() => oldBelief.classList.add('show'), 400);
-        setTimeout(() => objective.classList.add('show'), 600);
-        setTimeout(() => {
-          anchorNote.classList.add('show');
-          dismissHint.classList.add('show');
-        }, 900);
-      });
-    }
-
-    function reset() {
-      if (!isActive) return;
-      isActive = false;
-
-      active.classList.remove('visible');
-      scoreboard.classList.remove('cut');
-      vigilanceFill.classList.remove('cut');
-      vigilanceFill.classList.add('full');
-      oldBelief.classList.remove('show');
-      objective.classList.remove('show');
-      anchorNote.classList.remove('show');
-      dismissHint.classList.remove('show');
-
-      setTimeout(() => {
-        active.hidden = true;
-        idle.classList.remove('hidden');
-      }, 500);
-    }
-
-    activate.addEventListener('click', activateInterruptor);
-    active.addEventListener('click', reset);
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        isActive ? reset() : activateInterruptor();
-      }
-    });
+    SISTEMA.injectNav('index.html');
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "Sistema Flujo",
   "short_name": "Flujo",
-  "description": "Sistema personal para soltar la comparación y fluir",
+  "description": "Sistema personal — cortar al juez, no al momento",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#08080a",
