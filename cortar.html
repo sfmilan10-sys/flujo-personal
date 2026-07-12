@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#08080a">
   <link rel="manifest" href="manifest.json">
   <title>Cortar · Sistema Flujo</title>
@@ -11,199 +13,62 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/sistema.css">
-  <style>
-    .choose-screen { transition: opacity 0.35s, transform 0.35s; }
-    .choose-screen.off { opacity: 0; pointer-events: none; transform: scale(0.97); }
-
-    .trigger-big {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-size: clamp(1.6rem, 6vw, 2.2rem);
-      color: var(--old);
-      text-align: center;
-      margin: 0.75rem 0;
-    }
-
-    .scoreboard {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    .scoreboard.show { opacity: 1; }
-    .scoreboard.cut .score-col { opacity: 0; transform: translateY(8px); filter: blur(3px); transition: 0.6s; }
-    .score-col { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; transition: 0.6s; }
-    .score-bar { width: 3px; background: var(--dim); border-radius: 2px; }
-    .score-col.them .score-bar { height: 64px; }
-    .score-col.you .score-bar { height: 24px; }
-    .score-label { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; }
-
-    .meter {
-      width: min(200px, 70vw);
-      height: 5px;
-      background: var(--dim);
-      border-radius: 3px;
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-    .meter.show { opacity: 1; }
-    .meter-fill {
-      height: 100%;
-      background: var(--accent);
-      width: 92%;
-      transition: width 0.7s ease 0.15s;
-    }
-    .meter.cut .meter-fill { width: 0%; }
-  </style>
 </head>
 <body class="no-scroll">
   <div class="grain" aria-hidden="true"></div>
-  <div class="app full">
-    <main class="page center choose-screen" id="choose">
-      <p class="module-tag">Cortar · Revocar la orden</p>
-      <h1 class="page-title" style="text-align:center">¿Qué orden cortar?</h1>
-      <p class="page-sub" style="text-align:center;margin-bottom:1.25rem">No es hacer algo bien. Es retirar el mandato que corre solo.</p>
-      <div class="stack" id="modeList"></div>
-    </main>
 
-    <main class="page center choose-screen off" id="ready" hidden>
-      <p class="module-tag" id="readyTag">Corte</p>
-      <p class="trigger-big" id="trigger"></p>
-      <p class="page-sub" style="text-align:center" id="sub"></p>
-      <button class="btn-round" id="activate" type="button">
-        <span class="btn-round-label" id="btnLabel">Cortar</span>
-      </button>
-      <button class="text-btn" type="button" id="backModes" style="margin-top:1.25rem">← Elegir otra orden</button>
-    </main>
-
-    <section class="overlay-screen" id="cut" hidden aria-label="Corte activo">
-      <div class="scoreboard" id="scoreboard" aria-hidden="true">
-        <div class="score-col them"><div class="score-bar"></div><span class="score-label">Él</span></div>
-        <div class="score-col you"><div class="score-bar"></div><span class="score-label">Tú</span></div>
+  <div class="app full" id="app">
+    <!-- PANTALLA 1: Elegir orden -->
+    <section class="screen screen-pick active" id="screenPick" aria-label="Elegir orden">
+      <div class="page center scroll-y">
+        <p class="module-tag">Cortar · Revocar la orden</p>
+        <h1 class="page-title">¿Qué orden cortar?</h1>
+        <p class="page-sub">No es hacer algo bien. Es retirar el mandato que corre solo en tu cabeza.</p>
+        <div class="stack" id="modeList" aria-label="Tipos de corte"></div>
       </div>
-      <div class="meter" id="meter" aria-hidden="true"><div class="meter-fill" id="meterFill"></div></div>
-      <p class="strike" id="old"></p>
-      <p class="cut-text" id="cut"></p>
-      <p class="anchor" id="anchor"></p>
-      <p class="dismiss" id="dismiss">Toca para volver</p>
+    </section>
+
+    <!-- PANTALLA 2: Listo para cortar -->
+    <section class="screen screen-ready" id="screenReady" aria-label="Preparar corte">
+      <div class="page center justify" style="height:100%;padding-bottom:calc(var(--nav-h) + 1rem + var(--safe-bottom))">
+        <p class="module-tag" id="readyTag" style="align-self:center;text-align:center">Corte</p>
+        <p class="trigger-big" id="triggerText"></p>
+        <p class="page-sub" style="text-align:center;margin-bottom:1.75rem" id="triggerSub"></p>
+        <button class="btn-round" id="btnCut" type="button" aria-label="Ejecutar corte">
+          <span class="btn-round-ring" aria-hidden="true"></span>
+          <span class="btn-round-label" id="btnCutLabel">Cortar</span>
+        </button>
+        <button class="text-btn" type="button" id="btnBackPick">← Elegir otra orden</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: Corte activo (sobre la nav) -->
+    <section class="screen screen-cut" id="screenCut" aria-label="Corte activo">
+      <div class="cut-panel" id="cutPanel">
+        <div class="scoreboard is-hidden" id="scoreboard" aria-hidden="true">
+          <div class="score-col them">
+            <div class="score-bar"></div>
+            <span class="score-label">Él</span>
+          </div>
+          <div class="score-col you">
+            <div class="score-bar"></div>
+            <span class="score-label">Tú</span>
+          </div>
+        </div>
+
+        <div class="meter is-hidden" id="meter" aria-hidden="true">
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+
+        <p class="strike" id="textOld"></p>
+        <p class="cut-text" id="textCut"></p>
+        <p class="cut-anchor" id="textAnchor"></p>
+        <button class="cut-dismiss" id="btnDismiss" type="button">Toca para volver</button>
+      </div>
     </section>
   </div>
 
   <script src="assets/mapa.js"></script>
-  <script>
-    const modeLabels = {
-      flash: 'Flash · Di algo bueno',
-      comparacion: 'Comparación · Otra vez',
-      evaluacion: 'Evaluación global',
-      tribunal: 'Tribunal · Cada frase',
-      ideal: 'Búsqueda del ideal',
-      instante: 'Instante en juicio'
-    };
-
-    const choose = document.getElementById('choose');
-    const ready = document.getElementById('ready');
-    const cutScreen = document.getElementById('cut');
-    const modeList = document.getElementById('modeList');
-
-    modeList.innerHTML = Object.entries(MAPA.cortes).map(([key, c]) => `
-      <button class="card" type="button" data-mode="${key}">
-        <div class="card-id">${modeLabels[key] || key}</div>
-        <div class="card-label">${c.trigger}</div>
-        <div class="card-hint">${c.sub}</div>
-      </button>
-    `).join('');
-
-    let currentMode = SISTEMA.qs('modo');
-    let active = false;
-
-    function pickMode(key) {
-      currentMode = key;
-      const c = MAPA.cortes[key];
-      document.getElementById('readyTag').textContent = modeLabels[key] || key;
-      document.getElementById('trigger').textContent = c.trigger;
-      document.getElementById('sub').textContent = c.sub.replace(/<[^>]+>/g, '');
-      document.getElementById('btnLabel').textContent = c.btn;
-      choose.classList.add('off');
-      setTimeout(() => {
-        choose.hidden = true;
-        ready.hidden = false;
-        ready.classList.remove('off');
-      }, 280);
-    }
-
-    if (currentMode && MAPA.cortes[currentMode]) pickMode(currentMode);
-
-    modeList.querySelectorAll('[data-mode]').forEach(btn => {
-      btn.addEventListener('click', () => pickMode(btn.dataset.mode));
-    });
-
-    document.getElementById('backModes').addEventListener('click', () => {
-      ready.classList.add('off');
-      setTimeout(() => {
-        ready.hidden = true;
-        choose.hidden = false;
-        choose.classList.remove('off');
-      }, 280);
-    });
-
-    function runCut() {
-      if (active || !currentMode) return;
-      active = true;
-      const c = MAPA.cortes[currentMode];
-      const sb = document.getElementById('scoreboard');
-      const meter = document.getElementById('meter');
-
-      ready.classList.add('off');
-      cutScreen.hidden = false;
-
-      sb.style.display = c.visual === 'scoreboard' ? 'flex' : 'none';
-      meter.style.display = c.visual === 'meter' ? 'block' : 'none';
-
-      document.getElementById('old').textContent = c.old;
-      document.getElementById('cut').innerHTML = c.cut;
-      document.getElementById('anchor').textContent = c.anchor;
-
-      requestAnimationFrame(() => {
-        cutScreen.classList.add('visible');
-        if (c.visual === 'scoreboard') {
-          sb.classList.add('show');
-          setTimeout(() => sb.classList.add('cut'), 200);
-        }
-        if (c.visual === 'meter') {
-          meter.classList.add('show');
-          setTimeout(() => meter.classList.add('cut'), 200);
-        }
-        setTimeout(() => document.getElementById('old').classList.add('show'), 350);
-        setTimeout(() => document.getElementById('cut').classList.add('show'), 500);
-        setTimeout(() => {
-          document.getElementById('anchor').classList.add('show');
-          document.getElementById('dismiss').classList.add('show');
-        }, 700);
-      });
-    }
-
-    function resetCut() {
-      if (!active) return;
-      active = false;
-      cutScreen.classList.remove('visible');
-      ['old', 'cut', 'anchor', 'dismiss'].forEach(id => document.getElementById(id).classList.remove('show'));
-      document.getElementById('scoreboard').classList.remove('show', 'cut');
-      document.getElementById('meter').classList.remove('show', 'cut');
-      setTimeout(() => {
-        cutScreen.hidden = true;
-        ready.classList.remove('off');
-      }, 400);
-    }
-
-    document.getElementById('activate').addEventListener('click', runCut);
-    cutScreen.addEventListener('click', resetCut);
-
-    SISTEMA.injectNav('cortar.html');
-  </script>
+  <script src="assets/cortar.js"></script>
 </body>
 </html>

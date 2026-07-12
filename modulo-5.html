@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#08080a">
   <link rel="manifest" href="manifest.json">
@@ -11,70 +12,87 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/sistema.css">
-  <style>
-    .ready { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.35s; }
-    .ready.off { opacity: 0; pointer-events: none; transform: scale(0.97); }
-  </style>
 </head>
 <body class="no-scroll">
   <div class="grain" aria-hidden="true"></div>
   <div class="app full">
-    <main class="page center ready" id="ready">
-      <p class="module-tag">La palanca · 10 segundos</p>
-      <p class="module-tag" style="color:var(--old);font-size:0.72rem;letter-spacing:0.12em;margin-bottom:0.5rem">ENTRE miedo y filtro global</p>
-      <h1 class="page-title old italic serif" style="text-align:center;font-size:clamp(1.6rem,6vw,2.3rem)">Miedo a perderlo</h1>
-      <p class="page-sub" style="text-align:center;margin-bottom:2rem">Te empujas a ti: acelerar. Producir. <strong style="color:var(--text);font-weight:500">"Di algo bueno."</strong></p>
-      <button class="btn-round" id="go" type="button">
-        <span class="btn-round-label">No acelerar</span>
-      </button>
-    </main>
+    <section class="screen screen-ready active" id="screenReady">
+      <div class="page center justify" style="height:100%;padding-bottom:calc(var(--nav-h) + 1rem + var(--safe-bottom))">
+        <p class="module-tag" style="align-self:center;text-align:center">La palanca · 10 segundos</p>
+        <p class="module-tag old" style="font-size:0.62rem;letter-spacing:0.1em;margin-bottom:0.35rem">ENTRE miedo y filtro global</p>
+        <h1 class="trigger-big">Miedo a perderlo</h1>
+        <p class="page-sub" style="text-align:center;margin-bottom:1.75rem">
+          Te empujas: acelerar. Producir.<br>
+          <strong style="color:var(--text);font-weight:500">"Di algo bueno."</strong>
+        </p>
+        <button class="btn-round" id="btnGo" type="button">
+          <span class="btn-round-ring" aria-hidden="true"></span>
+          <span class="btn-round-label">No acelerar</span>
+        </button>
+      </div>
+    </section>
 
-    <section class="overlay-screen" id="cut" hidden>
-      <p class="strike" id="old"></p>
-      <p class="cut-text" id="cutText"></p>
-      <p class="anchor" id="anchor"></p>
-      <p class="dismiss" id="dismiss">Toca para volver</p>
+    <section class="screen screen-cut" id="screenCut">
+      <div class="cut-panel">
+        <p class="strike" id="textOld"></p>
+        <p class="cut-text" id="textCut"></p>
+        <p class="cut-anchor" id="textAnchor"></p>
+        <button class="cut-dismiss" id="btnDismiss" type="button">Toca para volver</button>
+      </div>
     </section>
   </div>
 
   <script src="assets/mapa.js"></script>
   <script>
-    const c = MAPA.cortes.flash;
-    const ready = document.getElementById('ready');
-    const cut = document.getElementById('cut');
-    let on = false;
+    (function () {
+      const c = MAPA.cortes.flash;
+      const ready = document.getElementById('screenReady');
+      const cut = document.getElementById('screenCut');
+      const textOld = document.getElementById('textOld');
+      const textCut = document.getElementById('textCut');
+      const textAnchor = document.getElementById('textAnchor');
+      const btnDismiss = document.getElementById('btnDismiss');
+      let on = false;
+      let timers = [];
 
-    document.getElementById('old').textContent = c.old;
-    document.getElementById('cutText').innerHTML = c.cut;
-    document.getElementById('anchor').textContent = c.anchor;
+      textOld.textContent = c.old;
+      textCut.innerHTML = c.cut;
+      textAnchor.textContent = c.anchor;
 
-    function activate() {
-      if (on) return;
-      on = true;
-      ready.classList.add('off');
-      cut.hidden = false;
-      requestAnimationFrame(() => {
-        cut.classList.add('visible');
-        setTimeout(() => document.getElementById('old').classList.add('show'), 80);
-        setTimeout(() => document.getElementById('cutText').classList.add('show'), 280);
-        setTimeout(() => {
-          document.getElementById('anchor').classList.add('show');
-          document.getElementById('dismiss').classList.add('show');
-        }, 480);
-      });
-    }
+      function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+      function clearAll() { timers.forEach(clearTimeout); timers = []; }
 
-    function reset() {
-      if (!on) return;
-      on = false;
-      cut.classList.remove('visible');
-      ['old', 'cutText', 'anchor', 'dismiss'].forEach(id => document.getElementById(id).classList.remove('show'));
-      setTimeout(() => { cut.hidden = true; ready.classList.remove('off'); }, 380);
-    }
+      function activate() {
+        if (on) return;
+        on = true;
+        clearAll();
+        [textOld, textCut, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
+        ready.classList.remove('active');
+        cut.classList.add('active');
+        later(() => textOld.classList.add('show'), 80);
+        later(() => textCut.classList.add('show'), 260);
+        later(() => { textAnchor.classList.add('show'); btnDismiss.classList.add('show'); }, 420);
+      }
 
-    document.getElementById('go').addEventListener('click', activate);
-    cut.addEventListener('click', reset);
-    SISTEMA.injectNav('modulo-5.html');
+      function reset() {
+        if (!on) return;
+        on = false;
+        clearAll();
+        [textOld, textCut, textAnchor, btnDismiss].forEach(el => el.classList.remove('show'));
+        cut.classList.remove('active');
+        ready.classList.add('active');
+      }
+
+      let lastTouch = 0;
+      function bindTap(el, fn) {
+        el.addEventListener('touchend', e => { lastTouch = Date.now(); e.preventDefault(); fn(); }, { passive: false });
+        el.addEventListener('click', () => { if (Date.now() - lastTouch < 500) return; fn(); });
+      }
+
+      bindTap(document.getElementById('btnGo'), activate);
+      bindTap(btnDismiss, reset);
+      SISTEMA.injectNav('modulo-5.html');
+    })();
   </script>
 </body>
 </html>
