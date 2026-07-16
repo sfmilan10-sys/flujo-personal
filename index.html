@@ -1,76 +1,633 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#08080a">
-  <link rel="manifest" href="manifest.json">
-  <title>Sistema Flujo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/sistema.css">
-  <style>
-    .hero-quote {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.05rem;
-      line-height: 1.45;
-      margin: 1rem 0 0.25rem;
-      color: var(--text);
-    }
-    .section-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 1.5rem 0 0.65rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#34402f">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Ahora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --moss: #4d5c4a;
+  --moss-dark: #34402f;
+  --stone: #ece7dc;
+  --stone-2: #ddd5c2;
+  --ink: #2a2620;
+  --ink-soft: #6b6455;
+  --clay: #b3673f;
+  --clay-soft: #e3b79a;
+  --white: #fffdf9;
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html,body{
+  margin:0; padding:0; height:100%;
+  background: var(--stone);
+  color: var(--ink);
+  font-family: 'Poppins', sans-serif;
+  overscroll-behavior: none;
+  -webkit-user-select:none; user-select:none;
+}
+.serif{ font-family:'Fraunces', serif; }
+
+#app{
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100vh;
+  height: 100dvh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  background: var(--stone);
+}
+
+/* ---------- HEADER ---------- */
+header{
+  padding: max(18px, env(safe-area-inset-top)) 22px 12px 22px;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+}
+header .brand{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size: 21px;
+  color: var(--moss-dark);
+  letter-spacing: 0.2px;
+}
+header .clock{
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+}
+
+/* ---------- VIEWS ---------- */
+.view{
+  flex:1;
+  overflow-y:auto;
+  padding: 6px 22px 110px 22px;
+  display:none;
+}
+.view.active{ display:block; }
+
+/* ---------- HOME / ANCLA ---------- */
+.home-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top: 18px;
+}
+.eyebrow{
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform:uppercase;
+  color: var(--moss);
+  font-weight:600;
+  margin-bottom: 6px;
+  text-align:center;
+}
+.dial-outer{
+  width: 232px; height: 232px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin: 14px 0 22px 0;
+  position:relative;
+  background: radial-gradient(circle at 50% 45%, var(--moss) 0%, var(--moss-dark) 78%);
+  box-shadow: 0 18px 40px -14px rgba(52,64,47,0.55);
+}
+.dial-outer::before{
+  content:"";
+  position:absolute;
+  inset:-14px;
+  border-radius:50%;
+  border: 1px solid rgba(77,92,74,0.35);
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%,100%{ transform: scale(1); opacity:.55; }
+  50%{ transform: scale(1.09); opacity:.15; }
+}
+.dial-inner{
+  width: 190px; height:190px;
+  border-radius:50%;
+  background: rgba(255,253,249,0.06);
+  border: 1px solid rgba(255,253,249,0.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  flex-direction:column;
+  padding: 20px;
+  cursor:pointer;
+}
+.dial-inner .tap-label{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  color: var(--white);
+  font-size: 15px;
+  opacity:0.75;
+}
+.dial-inner .prompt{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  color: var(--white);
+  font-size: 19px;
+  line-height:1.35;
+  display:none;
+}
+.dial-inner.showing .tap-label{ display:none; }
+.dial-inner.showing .prompt{ display:block; }
+
+.hint{
+  font-size:12.5px;
+  color: var(--ink-soft);
+  text-align:center;
+  max-width: 260px;
+  line-height:1.5;
+  margin-bottom: 22px;
+}
+
+.tense-row{
+  display:flex;
+  gap:8px;
+  width:100%;
+  margin-top: 4px;
+}
+.tense-btn{
+  flex:1;
+  border:none;
+  background: var(--white);
+  border: 1px solid var(--stone-2);
+  color: var(--ink);
+  font-family:'Poppins', sans-serif;
+  font-size:11.5px;
+  font-weight:500;
+  padding: 11px 6px;
+  border-radius: 12px;
+  text-align:center;
+  line-height:1.3;
+}
+.tense-btn:active{ background: var(--stone-2); }
+.tense-reveal{
+  margin-top:14px;
+  background: var(--white);
+  border-radius:14px;
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height:1.55;
+  color: var(--ink);
+  border-left: 3px solid var(--clay);
+  display:none;
+}
+.tense-reveal.show{ display:block; }
+
+/* ---------- SECTION HEADINGS ---------- */
+.section-title{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size: 22px;
+  color: var(--moss-dark);
+  margin: 8px 0 4px 0;
+}
+.section-sub{
+  font-size:13px;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+  line-height:1.5;
+}
+
+/* ---------- CARDS ---------- */
+.card{
+  background: var(--white);
+  border-radius: 16px;
+  padding: 16px 17px;
+  margin-bottom: 12px;
+  border: 1px solid var(--stone-2);
+}
+.card h4{
+  margin:0 0 6px 0;
+  font-family:'Fraunces', serif;
+  font-size: 15.5px;
+  font-weight:600;
+  color: var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.card p{
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  line-height:1.55;
+  color: var(--ink-soft);
+}
+.tag{
+  font-size:9.5px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  font-weight:600;
+  color: var(--moss);
+  background: rgba(77,92,74,0.1);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.chev{
+  font-size:16px;
+  color: var(--ink-soft);
+  transition: transform .2s ease;
+}
+.card.open .chev{ transform: rotate(180deg); }
+.card-body{
+  max-height:0;
+  overflow:hidden;
+  transition: max-height .25s ease;
+}
+.card.open .card-body{ max-height: 600px; }
+.card-body-inner{ padding-top:10px; }
+
+/* ---------- TIMER WIDGET ---------- */
+.timer-box{
+  margin-top:10px;
+  background: var(--stone);
+  border-radius:12px;
+  padding: 14px;
+  text-align:center;
+}
+.timer-input{
+  width:100%;
+  border: 1px solid var(--stone-2);
+  background: var(--white);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family:'Fraunces', serif;
+  font-size: 15px;
+  text-align:center;
+  color: var(--ink);
+  margin-bottom:10px;
+}
+.timer-display{
+  font-family:'Fraunces', serif;
+  font-size: 34px;
+  font-weight:600;
+  color: var(--moss-dark);
+  margin: 4px 0 10px 0;
+}
+.btn{
+  border:none;
+  background: var(--moss-dark);
+  color: var(--white);
+  font-family:'Poppins', sans-serif;
+  font-weight:500;
+  font-size: 13px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  width:100%;
+}
+.btn:active{ opacity:0.85; }
+.btn.secondary{
+  background: transparent;
+  border: 1px solid var(--stone-2);
+  color: var(--ink);
+}
+
+/* ---------- ENSANCHAR (steps) ---------- */
+.steps-dots{
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  margin: 4px 0 18px 0;
+}
+.dot{
+  width:6px; height:6px; border-radius:50%;
+  background: var(--stone-2);
+}
+.dot.active{ background: var(--moss); width:18px; border-radius:4px; transition: all .2s; }
+.step-card{
+  background: var(--white);
+  border-radius:18px;
+  padding: 24px 20px;
+  min-height: 230px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  text-align:center;
+  border: 1px solid var(--stone-2);
+}
+.step-num{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  color: var(--clay);
+  font-size:13px;
+  margin-bottom:10px;
+}
+.step-text{
+  font-family:'Fraunces', serif;
+  font-size: 17px;
+  line-height:1.5;
+  color: var(--ink);
+}
+.step-nav{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+
+/* ---------- NAV BAR ---------- */
+nav{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  background: var(--white);
+  border-top: 1px solid var(--stone-2);
+  display:flex;
+  padding: 8px 6px max(8px, env(safe-area-inset-bottom)) 6px;
+}
+nav button{
+  flex:1;
+  background:none;
+  border:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  padding: 6px 2px;
+  color: var(--ink-soft);
+  font-family:'Poppins', sans-serif;
+  font-size: 10.5px;
+  font-weight:500;
+}
+nav button .ic{
+  width:20px; height:20px;
+  display:flex; align-items:center; justify-content:center;
+}
+nav button.active{ color: var(--moss-dark); }
+nav button.active .ic svg{ stroke: var(--moss-dark); }
+nav button .ic svg{ stroke: var(--ink-soft); }
+
+</style>
 </head>
-<body class="scroll">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="app">
-    <main class="page">
-      <p class="module-tag">Tu sistema · Personal</p>
-      <h1 class="page-title">Sistema Flujo</h1>
-      <p class="page-sub wide">No es motivación. Es cortar las órdenes que tu mente ejecuta sola.</p>
+<body>
+<div id="app">
 
-      <div class="nuclear" id="nuclearOld"></div>
-      <div class="nuclear nuclear-new" id="nuclearNew"></div>
+  <header>
+    <div class="brand">Ahora</div>
+    <div class="clock" id="clock"></div>
+  </header>
 
-      <p class="section-label">Tu ciclo (mapeado)</p>
-      <div class="cycle-box" id="cycleBox"></div>
+  <!-- ============ VISTA 1: AHORA (presencia) ============ -->
+  <div class="view active" id="view-ahora">
+    <div class="home-wrap">
+      <div class="eyebrow">Contacto con el presente</div>
 
-      <p class="section-label">¿Qué notas ahora?</p>
-      <div class="stack" id="router"></div>
+      <div class="dial-outer">
+        <div class="dial-inner" id="dial" onclick="newAnchor()">
+          <div class="tap-label">toca para<br>un ancla</div>
+          <div class="prompt" id="anchorText"></div>
+        </div>
+      </div>
 
-      <p class="hero-quote" style="margin-top:1.75rem;font-size:0.85rem;color:var(--muted)">
-        Evidencia que el juez borra: <span class="accent italic">imperfecto → te reíste → auténtico → conectó.</span>
-      </p>
-    </main>
+      <div class="hint">Un dato sensorial, concreto y presente. No busca calma — busca que la atención toque algo real, una vez.</div>
+
+      <div style="width:100%; margin-top:6px;">
+        <div class="eyebrow" style="text-align:left; margin-bottom:10px;">¿Dónde está tu mente ahora?</div>
+        <div class="tense-row">
+          <button class="tense-btn" onclick="showTense('pasado')">Es un<br>recuerdo</button>
+          <button class="tense-btn" onclick="showTense('futuro')">Es una<br>anticipación</button>
+          <button class="tense-btn" onclick="showTense('ahora')">Es<br>ahora</button>
+        </div>
+        <div class="tense-reveal" id="tenseReveal"></div>
+      </div>
+    </div>
   </div>
 
-  <script src="assets/mapa.js"></script>
-  <script>
-    document.getElementById('nuclearOld').innerHTML = '<strong>Creencia vieja:</strong> ' + MAPA.nuclear.vieja;
-    document.getElementById('nuclearNew').innerHTML = '<strong>Orden vital:</strong> ' + MAPA.nuclear.nueva;
+  <!-- ============ VISTA 2: NOMBRAR (defusión) ============ -->
+  <div class="view" id="view-nombrar">
+    <div class="section-title">Nombrar</div>
+    <div class="section-sub">Defusión, en el sentido de Hayes: no se discute el contenido del pensamiento — se le quita la función de mando.</div>
 
-    document.getElementById('cycleBox').innerHTML = MAPA.ciclo.map(s =>
-      `<div class="cycle-step${s.hi ? ' highlight' : ''}">${s.t}</div>`
-    ).join('');
+    <div class="card" onclick="toggleCard(this)">
+      <h4>¿Qué está diciendo tu mente? <span class="chev">⌄</span></h4>
+      <div class="card-body"><div class="card-body-inner">
+        <p>Termina la frase, en tu cabeza o en voz baja: <em>"Estoy teniendo el pensamiento de que..."</em>. No completes con "yo soy" ni "esto es" — el cambio de gramática es el ejercicio entero. Notarás que cuesta un poco más sostenerlo como veredicto.</p>
+      </div></div>
+    </div>
 
-    document.getElementById('router').innerHTML = MAPA.router.map(r => `
-      <a class="card" href="${r.href}">
-        <div class="card-id">${r.id}</div>
-        <div class="card-label">${r.label}</div>
-        <div class="card-hint">${r.hint}</div>
-      </a>
-    `).join('');
+    <div class="card" onclick="toggleCard(this)">
+      <h4>El Dictador no distingue halago de condena <span class="chev">⌄</span></h4>
+      <div class="card-body"><div class="card-body-inner">
+        <p>Si la voz interna está aprobando ("eso estuvo bien") o condenando ("qué torpe"), es el mismo mecanismo: mandar. No hace falta ganarle la discusión en ningún de los dos casos — solo notar que es una voz, no un veredicto sobre la realidad.</p>
+      </div></div>
+    </div>
 
-    SISTEMA.injectNav('index.html');
-  </script>
+    <div class="card" onclick="toggleCard(this)">
+      <h4>Repetición de palabra <span class="tag">2 min</span></h4>
+      <div class="card-body"><div class="card-body-inner">
+        <p>Toma la palabra exacta que usa tu mente ahora mismo — "torpe", "otra vez", "fracaso" — y repítela sin pausa hasta que se vuelva solo sonido.</p>
+        <div class="timer-box">
+          <input class="timer-input" id="wordInput" placeholder="escribe la palabra" maxlength="24">
+          <div class="timer-display" id="wordTimer">00:30</div>
+          <button class="btn" onclick="startWordTimer()">Empezar</button>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <h4>Niños discutiendo <span class="chev">⌄</span></h4>
+      <div class="card-body"><div class="card-body-inner">
+        <p>Escucha el juicio interno como si fueran voces de niños de primaria peleándose por una tontería: con curiosidad, algo de humor, sin corregirles ni darles la razón. Quita la toga sin discutir los argumentos.</p>
+      </div></div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <h4>Desobedecer a propósito <span class="chev">⌄</span></h4>
+      <div class="card-body"><div class="card-body-inner">
+        <p>Cuando la mente dé una orden directa ("no digas eso", "tiene que salir perfecto"), nota que es una orden que puedes desobedecer sin combatirla. No la sigas — y ya. La orden queda expuesta como sonido sin poder de mando.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA 3: ENSANCHAR (foco amplio) ============ -->
+  <div class="view" id="view-ensanchar">
+    <div class="section-title">Ensanchar el foco</div>
+    <div class="section-sub">Cuando la atención quedó fija en un solo punto — casi siempre evaluativo — se puede ensanchar de nuevo, sin dejar la situación.</div>
+
+    <div class="steps-dots" id="stepDots"></div>
+    <div class="step-card" id="stepCard">
+      <div class="step-num" id="stepNum">Paso 1 de 4</div>
+      <div class="step-text" id="stepText"></div>
+    </div>
+    <div class="step-nav">
+      <button class="btn secondary" onclick="prevStep()">Atrás</button>
+      <button class="btn" onclick="nextStep()" id="stepNextBtn">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- ============ VISTA 4: KIT ============ -->
+  <div class="view" id="view-kit">
+    <div class="section-title">Kit rápido</div>
+    <div class="section-sub">Para cuando no hay tiempo de leer nada: una secuencia de tres pasos, siempre igual.</div>
+
+    <div class="card open">
+      <h4>1 — Nombra</h4>
+      <div class="card-body" style="max-height:200px;"><div class="card-body-inner">
+        <p>Una frase corta, sin adornos: "está pasando esto ahora" o el nombre de lo que aparece — un recuerdo, un juicio, prisa.</p>
+      </div></div>
+    </div>
+    <div class="card open">
+      <h4>2 — Ancla</h4>
+      <div class="card-body" style="max-height:200px;"><div class="card-body-inner">
+        <p>Vuelve a la vista de Ahora y toca el círculo una vez. Un solo dato sensorial presente, nada más.</p>
+      </div></div>
+    </div>
+    <div class="card open">
+      <h4>3 — Sigue, sin resolver</h4>
+      <div class="card-body" style="max-height:200px;"><div class="card-body-inner">
+        <p>No compruebes si "funcionó". Continúa lo que estabas haciendo. Comprobar es otra vuelta de la misma rueda.</p>
+      </div></div>
+    </div>
+
+    <div class="section-sub" style="margin-top:22px;">Frases de reserva, si no llega ninguna otra:</div>
+    <div class="card">
+      <h4 style="font-style:italic; font-family:'Fraunces',serif; font-weight:500;">"Esto no está en juicio."</h4>
+    </div>
+    <div class="card">
+      <h4 style="font-style:italic; font-family:'Fraunces',serif; font-weight:500;">"Esto no necesita entenderse ahora."</h4>
+    </div>
+    <div class="card">
+      <h4 style="font-style:italic; font-family:'Fraunces',serif; font-weight:500;">"No tengo que sostener esto."</h4>
+    </div>
+  </div>
+
+  <nav>
+    <button class="active" data-view="ahora" onclick="switchView('ahora')">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/></svg></span>
+      Ahora
+    </button>
+    <button data-view="nombrar" onclick="switchView('nombrar')">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8M8 13h5"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg></span>
+      Nombrar
+    </button>
+    <button data-view="ensanchar" onclick="switchView('ensanchar')">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span>
+      Ensanchar
+    </button>
+    <button data-view="kit" onclick="switchView('kit')">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 1-4.5 4.5L17.5 20 12 16.5 6.5 20l1-6.5L3 9l6-1z"/></svg></span>
+      Kit
+    </button>
+  </nav>
+
+</div>
+
+<script>
+
+/* ---------- clock ---------- */
+function tickClock(){
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = h+':'+m;
+}
+tickClock(); setInterval(tickClock, 10000);
+
+/* ---------- nav ---------- */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+}
+
+/* ---------- anclas sensoriales ---------- */
+const anchors = [
+  "Nombra un sonido que esté ocurriendo ahora mismo, aunque sea de fondo.",
+  "Encuentra algo de color verde a tu alrededor. Mira solo eso dos segundos.",
+  "Nota la temperatura del aire sobre tu piel, en este instante.",
+  "Siente el punto exacto donde tu cuerpo hace contacto con la silla o el suelo.",
+  "Cuenta tres objetos rectangulares que puedas ver desde donde estás.",
+  "Nota el peso de tu teléfono en la mano ahora mismo.",
+  "Encuentra la fuente de luz más cercana. Mírala un segundo, sin más.",
+  "Nombra en silencio algo que puedas oler o que podrías oler si prestaras atención.",
+  "Nota si tus hombros están tensos o sueltos, sin cambiarlo.",
+  "Encuentra algo en la habitación que no habías notado hasta ahora.",
+  "Siente la textura de la superficie más cercana a tu mano.",
+  "Nota cuántos pasos de tiempo lleva tu siguiente respiración en llegar.",
+];
+function newAnchor(){
+  const dial = document.getElementById('dial');
+  const text = document.getElementById('anchorText');
+  const pick = anchors[Math.floor(Math.random()*anchors.length)];
+  text.textContent = pick;
+  dial.classList.add('showing');
+}
+
+/* ---------- nombrar el tiempo ---------- */
+const tenseCopy = {
+  pasado: "Es un recuerdo. Ya pasó. Está aquí como imagen o sensación, no como algo que esté ocurriendo otra vez.",
+  futuro: "Es una anticipación. Todavía no ha pasado — y puede que no pase como la mente lo está construyendo.",
+  ahora: "Si de verdad es ahora: ¿qué dato concreto lo confirma? Nómbralo. Si no hay ninguno, probablemente sea recuerdo o anticipación con disfraz de presente."
+};
+function showTense(t){
+  const el = document.getElementById('tenseReveal');
+  el.textContent = tenseCopy[t];
+  el.classList.add('show');
+}
+
+/* ---------- cards ---------- */
+function toggleCard(card){
+  card.classList.toggle('open');
+}
+
+/* ---------- timer repetición de palabra ---------- */
+let wordInterval = null;
+function startWordTimer(){
+  clearInterval(wordInterval);
+  let seconds = 30;
+  const display = document.getElementById('wordTimer');
+  const word = document.getElementById('wordInput').value.trim() || "otra vez";
+  let flip = false;
+  update(seconds);
+  wordInterval = setInterval(()=>{
+    seconds--;
+    if(seconds<0){ clearInterval(wordInterval); display.textContent = "Listo"; return; }
+    update(seconds);
+  }, 1000);
+  function update(s){
+    const m = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    display.textContent = m+':'+ss;
+  }
+}
+
+/* ---------- ensanchar (pasos) ---------- */
+const steps = [
+  "Sin dejar la situación, nota una sola cosa del entorno que no sea la que está capturando tu atención — un objeto, un sonido, una luz.",
+  "Ahora nota algo de tu propio cuerpo: el apoyo de los pies, la posición de las manos, la respiración tal como está, sin cambiarla.",
+  "Si hay otra persona presente, nota algo real de ella en este momento — su tono de voz, su expresión — no lo que tu mente está evaluando de ti mismo frente a ella.",
+  "Vuelve a la situación completa, sosteniendo los tres puntos a la vez: el entorno, tu cuerpo, lo que hay fuera de ti. No hace falta elegir uno solo."
+];
+let stepIndex = 0;
+function renderStep(){
+  document.getElementById('stepNum').textContent = `Paso ${stepIndex+1} de ${steps.length}`;
+  document.getElementById('stepText').textContent = steps[stepIndex];
+  const dots = document.getElementById('stepDots');
+  dots.innerHTML = steps.map((_,i)=>`<div class="dot ${i===stepIndex?'active':''}"></div>`).join('');
+  document.getElementById('stepNextBtn').textContent = stepIndex===steps.length-1 ? "Reiniciar" : "Siguiente";
+}
+function nextStep(){
+  if(stepIndex===steps.length-1){ stepIndex=0; } else { stepIndex++; }
+  renderStep();
+}
+function prevStep(){
+  stepIndex = stepIndex>0 ? stepIndex-1 : 0;
+  renderStep();
+}
+renderStep();
+
+</script>
 </body>
 </html>

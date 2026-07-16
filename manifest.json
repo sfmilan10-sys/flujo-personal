@@ -1,10 +1,10 @@
-{
-  "name": "Sistema Flujo",
-  "short_name": "Flujo",
-  "description": "Sistema personal — cortar al juez, no al momento",
+﻿{
+  "name": "Ahora",
+  "short_name": "Ahora",
+  "description": "Contacto con el presente",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#08080a",
-  "theme_color": "#08080a",
+  "background_color": "#ece7dc",
+  "theme_color": "#34402f",
   "orientation": "portrait"
 }
