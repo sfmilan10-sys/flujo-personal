@@ -1,10 +1,10 @@
-﻿{
-  "name": "Ahora",
-  "short_name": "Ahora",
-  "description": "Contacto con el presente",
+{
+  "name": "YoReal",
+  "short_name": "YoReal",
+  "description": "Brújula del Yo Real",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ece7dc",
-  "theme_color": "#34402f",
+  "background_color": "#121212",
+  "theme_color": "#121212",
   "orientation": "portrait"
 }
