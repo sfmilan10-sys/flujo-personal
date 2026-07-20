@@ -1,7 +1,7 @@
 {
   "name": "YoReal",
   "short_name": "YoReal",
-  "description": "Brújula del Yo Real",
+  "description": "Registro interno",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",
